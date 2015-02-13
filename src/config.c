@@ -232,7 +232,7 @@ void checkFirstTime(bool eepromReset)
 	    eepromConfig.ppmChannels   = 9;
 	    eepromConfig.slaveSpektrum = false;
 
-	    parseRcChannels("TAER12345678");
+	    parseRcChannels("AERT12345678");
 
 	    eepromConfig.escPwmRate   = 450;
         eepromConfig.servoPwmRate = 50;
