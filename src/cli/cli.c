@@ -141,6 +141,7 @@ void readCliPID(unsigned char PIDid)
 
 void cliCom(void)
 {
+	uint8_t i2cReadBuff; // TEMP
 	uint8_t  index;
 	uint8_t  numChannels = 8;
 	char mvlkToggleString[5] = { 0, 0, 0, 0, 0 };
@@ -928,6 +929,30 @@ void cliCom(void)
 				break;
 
 				///////////////////////////////
+
+			case '[': // Command Summary
+				cliBusy = true;
+				cliPortPrint("Testing I2C2 Bus...\t");
+				if(i2cRead(I2C2, 0b1001000, 0x00, 1, &i2cReadBuff))
+					cliPortPrint("ACK!");
+				else
+					cliPortPrint("NACK!");
+				cliPortPrintF("\nRESULT = %3d\n", i2cReadBuff);
+				cliBusy = false;
+				break;
+
+				///////////////////////////////
+
+			case ']': // Command Summary
+				cliBusy = true;
+				cliPortPrint("Testing I2C2 Bus...\t");
+				if(i2cRead(I2C2, 0b1001100, 0x00, 1, &i2cReadBuff))
+					cliPortPrint("ACK!");
+				else
+					cliPortPrint("NACK!");
+				cliPortPrintF("\nRESULT = %3d\n", i2cReadBuff);
+				cliBusy = false;
+				break;
 		}
     }
 }
