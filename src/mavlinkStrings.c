@@ -199,3 +199,16 @@ void mavlinkSendVfrHud(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void mavlinkSendESBData(void){
+	uint16_t data[7] = {1,2,3,4,5,6,7};
+	mavlink_msg_esb_data_pack(mavlink_system.sysid,
+							mavlink_system.compid,
+							&msg,
+							data
+							);
+
+	// Copy the message to the send buffer
+    length = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    mavlinkPortPrintBinary(buffer, length);
+}

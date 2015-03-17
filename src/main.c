@@ -219,6 +219,7 @@ int main(void)
             {
 				mavlinkSendAttitude();
 				mavlinkSendVfrHud();
+				mavlinkSendESBData();
 			}
 
             executionTime10Hz = micros() - currentTime;
