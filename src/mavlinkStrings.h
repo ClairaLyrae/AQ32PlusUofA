@@ -66,3 +66,4 @@ void mavlinkSendSysStatus(void);
 void mavlinkSendVfrHud(void);
 
 ///////////////////////////////////////////////////////////////////////////////
+void mavlinkSendESBData(void);
