@@ -362,7 +362,7 @@ void systemInit(void)
 
     BLUE_LED_ON;
 
-    delay(10000);  // 10 seconds of 20 second delay for sensor stabilization
+    //TODO delay(10000);  // 10 seconds of 20 second delay for sensor stabilization
 
     ///////////////////////////////////
 
@@ -403,7 +403,7 @@ void systemInit(void)
 
     initUBLOX();
 
-    delay(10000);  // Remaining 10 seconds of 20 second delay for sensor stabilization - probably not long enough..
+    // TODO delay(10000);  // Remaining 10 seconds of 20 second delay for sensor stabilization - probably not long enough..
 
     ///////////////////////////////////
 

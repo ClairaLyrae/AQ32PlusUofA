@@ -302,7 +302,7 @@ void initUBLOX(void)
     	delay(50);  // Delay so DMA buffer can be completely sent before trying next baud rate
     }
 
-	USART_InitStructure.USART_BaudRate = 38400;
+	USART_InitStructure.USART_BaudRate = 115200; // TODO Temporary
 
 	USART_Init(USART2, &USART_InitStructure);
 

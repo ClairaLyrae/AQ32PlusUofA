@@ -877,13 +877,15 @@ void cliCom(void)
 				cliPortPrint("'l' Attitudes                              'L' Set h PID Data           LP;I;D;N\n");
 				cliPortPrint("\n");
 
-				cliPortPrint("Press space bar for more, or enter a command....\n");
+				cliPortPrint("Press enter bar for more, or enter a command....\n");
 
 				while (cliPortAvailable() == false);
 
 				cliQuery = cliPortRead();
 
-				if (cliQuery != ' ')
+
+				//cliPortPrintF("Character = %c", cliQuery);
+				if (!(cliQuery == '\n' || cliQuery == '\r'))
 				{
 					validCliCommand = true;
 					cliBusy = false;
@@ -905,13 +907,14 @@ void cliCom(void)
 				cliPortPrint("'x' Terminate Serial Communication         'X' Not Used\n");
 				cliPortPrint("\n");
 
-				cliPortPrint("Press space bar for more, or enter a command....\n");
+				cliPortPrint("Press enter for more, or enter a command....\n");
 
 				while (cliPortAvailable() == false);
 
 				cliQuery = cliPortRead();
 
-				if (cliQuery != ' ')
+				//cliPortPrintF("Character = %c", cliQuery);
+				if (!(cliQuery == '\n' || cliQuery == '\r'))
 				{
 					validCliCommand = true;
 					cliBusy = false;

@@ -1,1 +1,7 @@
 // Put todo items here
+1. Ensure aeroquad will idle with all motors turning at relatively the same rpm.
+2. repeat #1 in attitude mode
+3. Ensure attitude mode works
+4. implement GPS  
+5. implement position hold
+6. ensure aeroquad can hover with in requirements
