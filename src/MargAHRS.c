@@ -145,7 +145,7 @@ void MargAHRSupdate(float gx, float gy, float gz,
     float vx, vy, vz, wx, wy, wz;
     float q0i, q1i, q2i, q3i;
 
-    //-------------------------------------------
+    //-------------------------------------------Initialize using accel and mag values
 
     if ((MargAHRSinitialized == false) && (magDataUpdate == true))
     {
@@ -160,13 +160,13 @@ void MargAHRSupdate(float gx, float gy, float gz,
     {
         halfT = dt * 0.5f;
 
-        norm = sqrt(SQR(ax) + SQR(ay) + SQR(az));
+        norm = sqrt(SQR(ax) + SQR(ay) + SQR(az));//accel
 
         if (norm != 0.0f)
         {
-			calculateAccConfidence(norm);
-            kpAcc = eepromConfig.KpAcc * accConfidence;
-            kiAcc = eepromConfig.KiAcc * accConfidence;
+			calculateAccConfidence(norm); // accConfidence =1
+            kpAcc = eepromConfig.KpAcc * accConfidence;//eepromConfig.KpAcc = 1.0f; always 1
+            kiAcc = eepromConfig.KiAcc * accConfidence;//eepromConfig.KiAcc = 0.0f; always 0
 
             normR = 1.0f / norm;
             ax *= normR;
@@ -200,7 +200,7 @@ void MargAHRSupdate(float gx, float gy, float gz,
 		    }
 	    }
 
-        //-------------------------------------------
+        //-------------------------------------------mag
 
         norm = sqrt(SQR(mx) + SQR(my) + SQR(mz));
 
@@ -236,11 +236,11 @@ void MargAHRSupdate(float gx, float gy, float gz,
 			// use un-extrapolated old values between magnetometer updates
 			// dubious as dT does not apply to the magnetometer calculation so
 			// time scaling is embedded in KpMag and KiMag
-			gx += exMag * eepromConfig.KpMag;
+			gx += exMag * eepromConfig.KpMag;  //KpMag=5
 			gy += eyMag * eepromConfig.KpMag;
 			gz += ezMag * eepromConfig.KpMag;
 
-			if (eepromConfig.KiMag > 0.0f)
+			if (eepromConfig.KiMag > 0.0f)//KiMag =0
 			{
 				exMagInt += exMag * eepromConfig.KiMag;
 				eyMagInt += eyMag * eepromConfig.KiMag;
@@ -255,10 +255,10 @@ void MargAHRSupdate(float gx, float gy, float gz,
         //-------------------------------------------
 
         // integrate quaternion rate
-        q0i = (-q1 * gx - q2 * gy - q3 * gz) * halfT;
-        q1i = ( q0 * gx + q2 * gz - q3 * gy) * halfT;
-        q2i = ( q0 * gy - q1 * gz + q3 * gx) * halfT;
-        q3i = ( q0 * gz + q1 * gy - q2 * gx) * halfT;
+        q0i = (-q1 * gx - q2 * gy - q3 * gz) * halfT; //-x-y-z
+        q1i = ( q0 * gx + q2 * gz - q3 * gy) * halfT; //x-yz
+        q2i = ( q0 * gy - q1 * gz + q3 * gx) * halfT; //xy-z
+        q3i = ( q0 * gz + q1 * gy - q2 * gx) * halfT; //-xyz
         q0 += q0i;
         q1 += q1i;
         q2 += q2i;

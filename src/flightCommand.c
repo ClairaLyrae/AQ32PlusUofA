@@ -197,6 +197,8 @@ void processFlightCommands(void)
     ///////////////////////////////////
 
     // Check AUX1 for rate, attitude, or GPS mode (3 Position Switch) NOT COMPLETE YET....
+    //AUX1(D) O(Rate)->2043 1(attitude)->3013 2(GPS&Att)->4081
+
 
 	if ((rxCommand[AUX1] > MIDCOMMAND) && (flightMode == RATE))
 	{
@@ -232,7 +234,7 @@ void processFlightCommands(void)
 
 	///////////////////////////////////
 
-	// Simple Mode Command Processing
+	// Simple Mode Command Processing. Orients copter to pilot
 
 	if (rxCommand[AUX3] > MIDCOMMAND)
 	{
@@ -280,6 +282,7 @@ void processFlightCommands(void)
     ///////////////////////////////////
 
     // Vertical Mode State Machine
+    //Aux2(A) 0->2211 1-> 3994
 
     switch (verticalModeState)
 	{
