@@ -90,7 +90,14 @@
 #include "mpu6000.h"
 #include "ms5611_I2C.h"
 #include "orientation.h"
-#include "ublox.h"
+//#include "ublox.h"
+
+#include "gps.h"
+// TODO Added these:
+#include "gpsNMEA.h"
+#include "gpsMediaTek19.h"
+#include "gpsUblox.h"
+//#include "ublox.h"
 
 #include "accelCalibrationMPU.h"
 #include "batMon.h"
@@ -104,7 +111,6 @@
 #include "flightCommand.h"
 #include "geoMagElements.h"
 #include "GeomagnetismHeader.h"
-#include "gps.h"
 #include "MargAHRS.h"
 #include "magCalibration.h"
 #include "mavlinkStrings.h"

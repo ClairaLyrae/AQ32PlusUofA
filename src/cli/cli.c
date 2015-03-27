@@ -369,60 +369,20 @@ void cliCom(void)
 			///////////////////////////////
 
 			case 'n': // GPS Data
-				switch (gpsDataType)
-				{
-					///////////////////////
-
-					case 0:
-						cliPortPrintF("%12ld, %12ld, %12ld, %12ld, %12ld, %12ld, %4d, %4d\n", gps.latitude,
-																							  gps.longitude,
-																							  gps.hMSL,
-																							  gps.velN,
-																							  gps.velE,
-																							  gps.velD,
-																							  gps.fix,
-																							  gps.numSats);
-						break;
-
-					///////////////////////
-
-					case 1:
-						cliPortPrintF("%3d: ", gps.numCh);
-
-						for (index = 0; index < gps.numCh; index++)
-							cliPortPrintF("%3d  ", gps.chn[index]);
-
-						cliPortPrint("\n");
-
-						break;
-
-					///////////////////////
-
-					case 2:
-						cliPortPrintF("%3d: ", gps.numCh);
-
-						for (index = 0; index < gps.numCh; index++)
-							cliPortPrintF("%3d  ", gps.svid[index]);
-
-						cliPortPrint("\n");
-
-						break;
-
-					///////////////////////
-
-					case 3:
-						cliPortPrintF("%3d: ", gps.numCh);
-
-						for (index = 0; index < gps.numCh; index++)
-							cliPortPrintF("%3d  ", gps.cno[index]);
-
-						cliPortPrint("\n");
-
-						break;
-
-					///////////////////////
-				}
-
+				//cliPortPrint("Last Msg: ");
+				//cliPortPrint(sentenceBuffer);
+				//cliPortPrint("\nMsg Counter: ");
+				//cliPortPrintF("%d, %d", sentencesProcessed);
+				//cliPortPrint("\n");
+				cliPortPrintF("ITOW:%12ld, LAT:%12ld, LONG:%12ld, HEAD:%12ld, HEIGHT:%12ld, HMSL:%12ld, FIX:%4d, NUMSAT:%4d\n",
+						gps.iTOW,
+						gps.latitude,
+						gps.longitude,
+						gps.hDop,
+						gps.height,
+						gps.hMSL,
+						gps.fix,
+						gps.numSats);
 				validCliCommand = false;
 				break;
 
@@ -770,13 +730,30 @@ void cliCom(void)
 
 			///////////////////////////////
 
-			case 'Q': // GPS Data Selection
-				gpsDataType = (uint8_t)readFloatCLI();
-
-				cliPortPrint("\n");
-
-				cliQuery = 'n';
-				validCliCommand = false;
+			case 'Q': // GPS Type Selection
+				cliBusy = true;
+				eepromConfig.gpsType = (uint8_t)readFloatCLI();
+				switch(eepromConfig.gpsType) {
+					case NO_GPS:
+						cliPortPrint("GPS Module Disabled\n");
+						break;
+					case MEDIATEK_3329_BINARY:
+						cliPortPrint("GPS Module set to MEDIATEK3329 (Binary)\n");
+						break;
+					case MEDIATEK_3329_NMEA:
+						cliPortPrint("GPS Module set to MEDIATEK3329 (NMEA)\n");
+						break;
+					case UBLOX:
+						cliPortPrint("GPS Module set to UBLOX\n");
+						break;
+					default:
+						cliPortPrint("Invalid GPS module type. Use 0-3 (NONE, MEDIATEK BINARY, MEDIATEK NMEA, UBLOX\n");
+						break;
+				}
+				initGPS();
+				cliBusy = false;
+                cliQuery = 'x';
+                validCliCommand = false;
 				break;
 
 			///////////////////////////////
