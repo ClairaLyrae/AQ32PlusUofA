@@ -139,9 +139,9 @@ extern heading_t heading;
 
 typedef struct gps_t
 {
-	int32_t  latitude;     // 1e-7 degrees
-	int32_t  longitude;    // 1e-7 degrees
-	int32_t  height;       // mm above ellipsoid
+	uint32_t  latitude;     // 1e-7 degrees
+	uint32_t  longitude;    // 1e-7 degrees
+	uint32_t   height;       // mm above ellipsoid
 	int32_t  hMSL;         // mm above mean sea level
 	int32_t  velN;         // cm/s
 	int32_t  velE;         // cm/s
@@ -243,6 +243,22 @@ enum { PPM, PWM, SPEKTRUM, SBUS };
 ///////////////////////////////////////////////////////////////////////////////
 
 enum { USB, UART1, UART2 };
+
+///////////////////////////////////////////////////////////////////////////////
+// GPS Configurations
+///////////////////////////////////////////////////////////////////////////////
+
+enum { NO_GPS = 0,
+	   MEDIATEK_3329_BINARY = 1,
+	   MEDIATEK_3329_NMEA = 2,
+	   UBLOX = 3};
+
+enum { FIX_NONE    = 1,
+       FIX_2D      = 2,
+       FIX_3D      = 3,
+       FIX_2D_SBAS = 6,
+       FIX_3D_SBAS = 7
+     };
 
 ///////////////////////////////////////////////////////////////////////////////
 // EEPROM
@@ -420,6 +436,9 @@ typedef struct eepromConfig_t
     uint16_t activeTelemetry;
 
     uint8_t  mavlinkEnabled;
+
+    // TODO Added
+    uint8_t	gpsType;
 
     ///////////////////////////////////
 

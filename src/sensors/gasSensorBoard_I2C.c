@@ -102,7 +102,7 @@ void writeCatalyticHtr1(float voltage)
 {
     uint8_t data[1];
     data[0] = (unsigned)(voltage / gsbHtrConvFactor);
-    i2cWrite(gsbI2C, gsbAddress, gsbCmdCatalyticHtr1, 1, data);
+    i2cWriteBuffer(gsbI2C, gsbAddress, gsbCmdCatalyticHtr1, 1, data);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -113,7 +113,7 @@ void writeCatalyticHtr2(float voltage)
 {
     uint8_t data[1];
     data[0] = (unsigned)(voltage / gsbHtrConvFactor);
-    i2cWrite(gsbI2C, gsbAddress, gsbCmdCatalyticHtr2, 1, data);
+    i2cWriteBuffer(gsbI2C, gsbAddress, gsbCmdCatalyticHtr2, 1, data);
 }
 
 
@@ -125,16 +125,16 @@ void writeElectroRef(float voltage)
 {
     uint8_t data[1];
     data[0] = (unsigned)(voltage / gsbRefConvFactor);
-    i2cWrite(gsbI2C, gsbAddress, gsbCmdElectroRef, 1, data);
+    i2cWriteBuffer(gsbI2C, gsbAddress, gsbCmdElectroRef, 1, data);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Calculate PPM Value From Raw
 ///////////////////////////////////////////////////////////////////////////////
 
-float calculatePPM(uint16_t rawVal)
+float calculatePartsPerMillion(uint16_t rawVal)
 {
-	return (((float)rawVal)*gsbConvFactor);
+	return rawVal*gsbConvFactor;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

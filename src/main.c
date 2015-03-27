@@ -209,7 +209,33 @@ int main(void)
 			    magDataUpdate = true;
             }
 
-            decodeUbloxMsg();
+        	switch (eepromConfig.gpsType)
+			{
+			    ///////////////////////
+
+			    case NO_GPS:                // No GPS installed
+			        break;
+
+			    ///////////////////////
+
+			    case MEDIATEK_3329_BINARY:  // MediaTek 3329 in binary mode
+			    	decodeMediaTek3329BinaryMsg();
+			    	break;
+
+				///////////////////////
+
+				case MEDIATEK_3329_NMEA:    // MediaTek 3329 in NMEA mode
+				    decodeNMEAsentence();
+	        	    break;
+
+			    ///////////////////////
+
+			    case UBLOX:                 // UBLOX in binary mode
+			    	decodeUbloxMsg();
+			    	break;
+
+			    ///////////////////////
+			}
 
             batMonTick();
 
@@ -411,11 +437,6 @@ int main(void)
             currentTime     = micros();
             deltaTime5Hz    = currentTime - previous5HzTime;
             previous5HzTime = currentTime;
-
-            if (gpsValid() == true)
-            {
-
-			}
 
             //if (eepromConfig.mavlinkEnabled == true)
             //{

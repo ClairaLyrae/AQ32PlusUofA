@@ -71,9 +71,9 @@ void readObjectTemperature(void)
 // Calculate Temperature From MLX Raw Data
 ///////////////////////////////////////////////////////////////////////////////
 
-float calculateMLXTemperature(uint16_t rawTemp)
+void calculateMLXTemperature(uint16_t rawTemp)
 {
-	return (((float)rawTemp)*mlxConvFactor) - 273.0f;
+	//return rawTemp*mlxConvFactor - 273.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -95,5 +95,5 @@ uint8_t initSensorMLX90614(void)
 
     return mlxSensorReady;
 }
-\
+
 ///////////////////////////////////////////////////////////////////////////////

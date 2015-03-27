@@ -501,6 +501,7 @@ void checkFirstTime(bool eepromReset)
 
         eepromConfig.activeTelemetry          = 0;
         eepromConfig.mavlinkEnabled           = false;
+        eepromConfig.gpsType				  =  MEDIATEK_3329_NMEA;
 
         eepromConfig.verticalVelocityHoldOnly = true;
 

@@ -341,8 +341,11 @@ void systemInit(void)
 
 	gpsPortClearBuffer       = &uart2ClearBuffer;
     gpsPortNumCharsAvailable = &uart2NumCharsAvailable;
-    gpsPortPrintBinary       = &uart2PrintBinary;
+    gpsPortPrint	       = &uart2Print;
+    gpsPortPrintF	       = &uart2PrintF;
     gpsPortRead              = &uart2Read;
+    gpsPortAvailable	       = &uart2Available;
+    gpsPortWrite	       = &uart2Write;
 
     openLogPortPrintF        = &uart3PrintF;
 
@@ -401,7 +404,8 @@ void systemInit(void)
     else
     	cliPortPrint("Error....\n\n");
 
-    initUBLOX();
+    initGPS();
+    //initUBLOX();
 
     // TODO delay(10000);  // Remaining 10 seconds of 20 second delay for sensor stabilization - probably not long enough..
 
