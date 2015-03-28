@@ -16,11 +16,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define gsbDefaultAddress	0x33
+
 #define gsbConvFactor 		0.02f
 #define gsbRefConvFactor 	0.02f
 #define gsbHtrConvFactor 	0.02f
 
-#define gsbDefaultAddress 	0x5A
 #define gsbCmdStatus 		0x5A
 #define gsbCmdCatalytic1 	0x5A
 #define gsbCmdCatalyticHtr1 0x5A
@@ -34,6 +35,12 @@
 #define gsbCmdCon		 	0xF0
 
 ///////////////////////////////////////////////////////////////////////////////
+
+//esbDevice_t esbDeviceGSB = {
+//	.name = "Gas Sensor Board",
+//	.updateFunction = updateGSB;
+//	.initFunction = initGSB;
+//};
 
 I2C_TypeDef *gsbI2C;
 uint8_t     gsbAddress;
@@ -53,12 +60,21 @@ float gsbCatalytic2PPM;
 uint8_t gsbSensorReady = false;
 
 ///////////////////////////////////////////////////////////////////////////////
+// Calculate PPM Value From Raw
+///////////////////////////////////////////////////////////////////////////////
+
+float calculatePPM(uint16_t rawVal)
+{
+	return rawVal*gsbConvFactor;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Read Electrochemical Sensor Values
 ///////////////////////////////////////////////////////////////////////////////
 
 void readElectrochemicalSensor(void)
 {
-    uint16_t data[2];
+    uint8_t data[2];
 
     i2cRead(gsbI2C, gsbAddress, gsbCmdElectro, 2, data);    // Request pressure read
 
@@ -72,7 +88,7 @@ void readElectrochemicalSensor(void)
 
 void readCatalyticSensor1(void)
 {
-    uint16_t data[2];
+    uint8_t data[2];
 
     i2cRead(gsbI2C, gsbAddress, gsbCmdCatalytic1, 2, data);
 
@@ -86,7 +102,7 @@ void readCatalyticSensor1(void)
 
 void readCatalyticSensor2(void)
 {
-    uint16_t data[2];
+    uint8_t data[2];
 
     i2cRead(gsbI2C, gsbAddress, gsbCmdCatalytic2, 2, data);
 
@@ -129,32 +145,28 @@ void writeElectroRef(float voltage)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Calculate PPM Value From Raw
-///////////////////////////////////////////////////////////////////////////////
-
-float calculatePartsPerMillion(uint16_t rawVal)
-{
-	return rawVal*gsbConvFactor;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Sensor Initialization
 ///////////////////////////////////////////////////////////////////////////////
 
-uint8_t initSensorGSB(void)
+uint8_t initGSB(void)
 {
 	uint8_t data[1];
 
     gsbI2C = I2C2;
-    gsbAddress = 0x5A;
+    gsbAddress = gsbDefaultAddress;
 
-    // Read device status
-    i2cRead(gsbI2C, gsbAddress, gsbCmdStatus, 1, data);
+    return true;
+}
 
-    // Return POR status (if device is active or not)
-    gsbSensorReady = ((data[0] & 0x10) >> 4);
+///////////////////////////////////////////////////////////////////////////////
+// Update Function
+///////////////////////////////////////////////////////////////////////////////
 
-    return gsbSensorReady;
+uint8_t updateGSB(void) {
+	readElectrochemicalSensor();
+	readCatalyticSensor1();
+	readCatalyticSensor2();
+	return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -492,6 +492,8 @@ int main(void)
 				mavlinkSendSysStatus();
 			}
 
+            updateESB();
+
             executionTime1Hz = micros() - currentTime;
         }
 

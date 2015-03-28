@@ -462,6 +462,8 @@ void systemInit(void)
     initMPU6000();
     initMag();
     initPressure();
+
+    initESB();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
