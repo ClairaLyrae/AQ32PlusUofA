@@ -417,7 +417,7 @@ void cliCom(void)
 				validCliCommand = false;
 				break;
 
-			///////////////////////////////
+			///////////////////////////////FLIGHT MODE
 
 			case 'r':
 				if (flightMode == RATE)
@@ -969,6 +969,19 @@ void cliCom(void)
 				cliPortPrintF("MLX90614[AMB:%f*C,OBJ:%f*C]\n", mlxAmbTempC, mlxObjTempC);
 				cliQuery = 'x';
 				validCliCommand = false;
+				break;
+
+				///////////////////////////////
+
+			case '|': // Command Summary
+				cliBusy = true;
+
+				cliPortPrintF("RawAccel = \t%d\t%d\t%d\n", (int)rawAccel[XAXIS], (int)rawAccel[YAXIS], (int)rawAccel[ZAXIS]);
+				cliPortPrintF("RawGyro = \t%d\t%d\t%d\n", (int)rawGyro[XAXIS], (int)rawGyro[YAXIS], (int)rawGyro[ZAXIS]);
+				cliPortPrintF("RawMag = \t%d\t%d\t%d\n", (int)rawMag[XAXIS], (int)rawMag[YAXIS], (int)rawMag[ZAXIS]);
+				cliPortPrintF("RawTemp = \t%d\n", rawMPU6000Temperature);
+
+				cliBusy = false;
 				break;
 		}
     }
