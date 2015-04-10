@@ -50,22 +50,15 @@ float rotationMatrix[9];
 
 void createRotationMatrix(void)
 {
+	// Create rotation matrix from current vehicle orientation quaternion
     rotationMatrix[0] = q0q0 + q1q1 -q2q2 - q3q3;
-
     rotationMatrix[1] = 2.0f * (q1q2 - q0q3);
-
     rotationMatrix[2] = 2.0f * (q0q2 + q1q3);
-
     rotationMatrix[3] = 2.0f * (q1q2 + q0q3);
-
     rotationMatrix[4] = q0q0 - q1q1 + q2q2 - q3q3;
-
     rotationMatrix[5] = 2.0f * (q2q3 - q0q1);
-
     rotationMatrix[6] = 2.0f * (q1q3 - q0q2);
-
     rotationMatrix[7] = 2.0f * (q0q1 + q2q3);
-
     rotationMatrix[8] = q0q0 - q1q1 - q2q2 + q3q3;
 }
 
@@ -79,16 +72,16 @@ void bodyAccelToEarthAccel(void)
     arm_matrix_instance_f32 b;
     arm_matrix_instance_f32 x;
 
+    // Use rotation matrix to rotate sensor acceleration vector to reference from earth
     arm_mat_init_f32(&a, 3, 3, (float *)rotationMatrix);
-
     arm_mat_init_f32(&b, 3, 1, (float *)sensors.accel100Hz);
-
     arm_mat_init_f32(&x, 3, 1,          earthAxisAccels);
-
     arm_mat_mult_f32(&a, &b, &x);
 
+    // Remove gravity component
     earthAxisAccels[ZAXIS] += accelOneG;
 
+    // Do some filtering on the result
     earthAxisAccels[XAXIS] = firstOrderFilter(earthAxisAccels[XAXIS], &firstOrderFilters[EARTH_AXIS_ACCEL_X_HIGHPASS]);
     earthAxisAccels[YAXIS] = firstOrderFilter(earthAxisAccels[YAXIS], &firstOrderFilters[EARTH_AXIS_ACCEL_Y_HIGHPASS]);
     earthAxisAccels[ZAXIS] = firstOrderFilter(earthAxisAccels[ZAXIS], &firstOrderFilters[EARTH_AXIS_ACCEL_Z_HIGHPASS]);

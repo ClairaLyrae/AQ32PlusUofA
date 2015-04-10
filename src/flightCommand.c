@@ -286,7 +286,7 @@ void processFlightCommands(void)
     ///////////////////////////////////
 
     // Vertical Mode State Machine
-    // Detents are used to simply arrest rotation or divide a rotation into discrete increments
+    // DEFINITION : Detents are used to simply arrest rotation or divide a rotation into discrete increments
 
     switch (verticalModeState)
 	{

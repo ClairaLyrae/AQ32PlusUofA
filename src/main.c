@@ -411,21 +411,14 @@ int main(void)
             else
                 GREEN_LED_TOGGLE;
 
-<<<<<<< HEAD
             // Counter to allow main loop to run for a while before starting up motors
             if ((execUpCount == 5) && (execUp == false))
-=======
-            if ((execUpCount == 5) && (execUp == false))//start up
->>>>>>> branch 'master' of https://github.com/ClairaLyrae/AQ32PlusUofA
             {
 				execUp = true;
                 pwmEscInit();
-<<<<<<< HEAD
-                homeData.magHeading = sensors.attitude500Hz[YAW];
-=======
 
-                homeData.magHeading = sensors.attitude500Hz[YAW];//initialize heading of copter
->>>>>>> branch 'master' of https://github.com/ClairaLyrae/AQ32PlusUofA
+                // Initialize vehicle heading
+                homeData.magHeading = sensors.attitude500Hz[YAW];
 			}
 
             // Update battery monitor
