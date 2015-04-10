@@ -471,13 +471,13 @@ int main(void)
             if (execUp == false)
                 execUpCount++;
 
-            if ((execUpCount == 5) && (execUp == false))
+            if ((execUpCount == 5) && (execUp == false))//start up
             {
 				execUp = true;
 
                 pwmEscInit();
 
-                homeData.magHeading = sensors.attitude500Hz[YAW];
+                homeData.magHeading = sensors.attitude500Hz[YAW];//initialize heading of copter
 			}
 
             if (batMonLowWarning > 0)

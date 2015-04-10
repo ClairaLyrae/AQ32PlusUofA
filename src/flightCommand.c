@@ -198,22 +198,35 @@ void processFlightCommands(void)
 
     // Check AUX1 for rate, attitude, or GPS mode (3 Position Switch) NOT COMPLETE YET....
     //AUX1(D) O(Rate)->2043 1(attitude)->3013 2(GPS&Att)->4081
+    //don't update flight mode if it has not changed
 
 
-	if ((rxCommand[AUX1] > MIDCOMMAND) && (flightMode == RATE))
+	if ((rxCommand[AUX1] > (MINCOMMAND+500)) && (rxCommand[AUX1] <= (MIDCOMMAND+500)) && (flightMode != ATTITUDE))
 	{
 		flightMode = ATTITUDE;
 		setPIDstates(ROLL_ATT_PID,  0.0f);
 		setPIDstates(PITCH_ATT_PID, 0.0f);
 		setPIDstates(HEADING_PID,   0.0f);
 	}
-	else if ((rxCommand[AUX1] <= MIDCOMMAND) && (flightMode == ATTITUDE))
+	else if ((rxCommand[AUX1] <= (MINCOMMAND+500)) && (flightMode != RATE))
 	{
 		flightMode = RATE;
 		setPIDstates(ROLL_RATE_PID,  0.0f);
 		setPIDstates(PITCH_RATE_PID, 0.0f);
 		setPIDstates(YAW_RATE_PID,   0.0f);
 	}
+	else if ((rxCommand[AUX1] > (MIDCOMMAND+500)) && (flightMode != GPS))//TODO
+	{
+		flightMode = ATTITUDE;
+		setPIDstates(ROLL_ATT_PID,  0.0f);
+		setPIDstates(PITCH_ATT_PID, 0.0f);
+		setPIDstates(HEADING_PID,   0.0f);
+//		flightMode = GPS;
+//		setPIDstates(ROLL_RATE_PID,  0.0f);
+//		setPIDstates(PITCH_RATE_PID, 0.0f);
+//		setPIDstates(YAW_RATE_PID,   0.0f);
+	}
+
 
 	///////////////////////////////////
 
@@ -283,7 +296,7 @@ void processFlightCommands(void)
 
     // Vertical Mode State Machine
     //Aux2(A) 0->2211 1-> 3994
-
+    //Detents are for example used to simply arrest rotation in one direction or to intentionally divide a rotation into discrete increments
     switch (verticalModeState)
 	{
 		case ALT_DISENGAGED_THROTTLE_ACTIVE:
@@ -298,7 +311,7 @@ void processFlightCommands(void)
 
 		    break;
 
-		///////////////////////////////
+		///////////////////////////////Assigning vertical mode
 
 		case ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT:
 		    if ((vertRefCmdInDetent == true) || eepromConfig.verticalVelocityHoldOnly)
@@ -335,14 +348,14 @@ void processFlightCommands(void)
 				altitudeHoldReference = hEstimate;
 			}
 
-		    if ((rxCommand[AUX2] <= MIDCOMMAND) && (previousAUX2State > MIDCOMMAND))  // AUX2 Falling edge detection
+		    if ((rxCommand[AUX2] <= MIDCOMMAND) && (previousAUX2State > MIDCOMMAND))  // AUX2 Falling edge detection, aux2 turned off
 		    {
 				verticalModeState = ALT_DISENGAGED_THROTTLE_INACTIVE;
 				altitudeHoldReference = hEstimate;
 			}
 
 
-		    if ((rxCommand[AUX4] > MIDCOMMAND) && (previousAUX4State <= MIDCOMMAND))  // AUX4 Rising edge detection
+		    if ((rxCommand[AUX4] > MIDCOMMAND) && (previousAUX4State <= MIDCOMMAND))  // AUX4 Rising edge detection, aux4 turned on
 		    	verticalModeState = ALT_DISENGAGED_THROTTLE_ACTIVE;
 
 		    break;
@@ -354,10 +367,10 @@ void processFlightCommands(void)
 			    eepromConfig.verticalVelocityHoldOnly)
 			    verticalModeState = ALT_DISENGAGED_THROTTLE_ACTIVE;
 
-			if ((rxCommand[AUX2] > MIDCOMMAND) && (previousAUX2State <= MIDCOMMAND))  // AUX2 Rising edge detection
+			if ((rxCommand[AUX2] > MIDCOMMAND) && (previousAUX2State <= MIDCOMMAND))  // AUX2 Rising edge detection, aux2 turned on
 		        verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
 
-			if ((rxCommand[AUX4] > MIDCOMMAND) && (previousAUX4State <= MIDCOMMAND))  // AUX4 Rising edge detection
+			if ((rxCommand[AUX4] > MIDCOMMAND) && (previousAUX4State <= MIDCOMMAND))  // AUX4 Rising edge detection, aux4 turned on
 			    verticalModeState = ALT_DISENGAGED_THROTTLE_ACTIVE;
 
 		    break;

@@ -303,25 +303,25 @@ void checkFirstTime(bool eepromReset)
 
         ///////////////////////////////
 
-        eepromConfig.PID[ROLL_RATE_PID].P                =  250.0f;
+        eepromConfig.PID[ROLL_RATE_PID].P                =  175.0f;
         eepromConfig.PID[ROLL_RATE_PID].I                =  100.0f;
-        eepromConfig.PID[ROLL_RATE_PID].D                =    0.0f;
+        eepromConfig.PID[ROLL_RATE_PID].D                =    2.0f;
         eepromConfig.PID[ROLL_RATE_PID].Limit            = 1000.0f * eepromConfig.rollAndPitchRateScaling * eepromConfig.PID[ROLL_RATE_PID].P ;
         eepromConfig.PID[ROLL_RATE_PID].integratorState  =    0.0f;
         eepromConfig.PID[ROLL_RATE_PID].filterState      =    0.0f;
         eepromConfig.PID[ROLL_RATE_PID].prevResetState   =   false;
 
-        eepromConfig.PID[PITCH_RATE_PID].P               =  250.0f;
+        eepromConfig.PID[PITCH_RATE_PID].P               =  175.0f;
         eepromConfig.PID[PITCH_RATE_PID].I               =  100.0f;
-        eepromConfig.PID[PITCH_RATE_PID].D               =    0.0f;
+        eepromConfig.PID[PITCH_RATE_PID].D               =    2.0f; // 175 limit
         eepromConfig.PID[PITCH_RATE_PID].Limit           = 1000.0f * eepromConfig.rollAndPitchRateScaling * eepromConfig.PID[PITCH_RATE_PID].P;
         eepromConfig.PID[PITCH_RATE_PID].integratorState =    0.0f;
         eepromConfig.PID[PITCH_RATE_PID].filterState     =    0.0f;
         eepromConfig.PID[PITCH_RATE_PID].prevResetState  =   false;
 
-        eepromConfig.PID[YAW_RATE_PID].P                 =  350.0f;
+        eepromConfig.PID[YAW_RATE_PID].P                 =  175.0f;
         eepromConfig.PID[YAW_RATE_PID].I                 =  100.0f;
-        eepromConfig.PID[YAW_RATE_PID].D                 =    0.0f;
+        eepromConfig.PID[YAW_RATE_PID].D                 =    2.0f; // 175 limit
         eepromConfig.PID[YAW_RATE_PID].Limit             =  1000.0f * eepromConfig.yawRateScaling * eepromConfig.PID[YAW_RATE_PID].P;
         eepromConfig.PID[YAW_RATE_PID].integratorState   =    0.0f;
         eepromConfig.PID[YAW_RATE_PID].filterState       =    0.0f;
