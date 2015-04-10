@@ -26,8 +26,14 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-I2C_TypeDef *mlx90614I2C;
-uint8_t     mlx90614Address;
+//esbDevice_t esbDeviceMLX90614 = {
+//	.name = "MLX90614 IR Thermometer",
+//	.updateFunction = updateMLX90614;
+//	.initFunction = initMLX90614;
+//};
+
+I2C_TypeDef *mlx90614I2C = I2C2;
+uint8_t     mlx90614Address = 0x5A;
 
 uint16_t mlxRawAmbTemp;
 uint16_t mlxRawObjTemp;
@@ -49,7 +55,7 @@ void readAmbientTemperature(void)
 
     mlxRawAmbTemp = data[0];
     mlxRawAmbTemp |= (data[1] << 8);
-    mlxAmbTempC = calculateMLXTemperature(mlxRawAmbTemp);
+    mlxAmbTempC = ((float)mlxRawAmbTemp*mlxConvFactor) - 273.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,36 +70,35 @@ void readObjectTemperature(void)
 
     mlxRawObjTemp = data[0];
     mlxRawObjTemp |= (data[1] << 8);
-    mlxObjTempC = calculateMLXTemperature(mlxRawObjTemp);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Calculate Temperature From MLX Raw Data
-///////////////////////////////////////////////////////////////////////////////
-
-void calculateMLXTemperature(uint16_t rawTemp)
-{
-	//return rawTemp*mlxConvFactor - 273.0f;
+    mlxObjTempC = ((float)mlxRawObjTemp*mlxConvFactor) - 273.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Sensor Initialization
 ///////////////////////////////////////////////////////////////////////////////
 
-uint8_t initSensorMLX90614(void)
+void initMLX90614(void)
 {
-	uint8_t data[1];
+	//uint8_t data[1];
 
     mlx90614I2C = I2C2;
     mlx90614Address = 0x5A;
 
     // Read device flags
-    i2cRead(mlx90614I2C, mlx90614Address, mlxCmdReadFlags, 1, data);
+    //i2cRead(mlx90614I2C, mlx90614Address, mlxCmdReadFlags, 1, data);
 
     // Return POR status (if device is active or not)
-    mlxSensorReady = ((data[0] & 0x10) >> 4);
+    //mlxSensorReady = ((data[0] & 0x10) >> 4);
+}
 
-    return mlxSensorReady;
+///////////////////////////////////////////////////////////////////////////////
+// Read all values
+///////////////////////////////////////////////////////////////////////////////
+
+void updateMLX90614(void)
+{
+	readAmbientTemperature();
+	readObjectTemperature();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

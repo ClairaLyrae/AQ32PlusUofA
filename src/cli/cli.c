@@ -57,6 +57,15 @@ static volatile uint8_t validCliCommand = false;
 
 uint8_t gpsDataType = 0;
 
+uint8_t i2cTestAddress;
+uint8_t i2cTestRegister;
+uint8_t i2cTestDataLength;
+uint8_t i2cTestData[32];
+
+uint8_t i2cIndexer;
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Read Character String from CLI
 ///////////////////////////////////////////////////////////////////////////////
@@ -910,28 +919,56 @@ void cliCom(void)
 
 				///////////////////////////////
 
-			case '[': // Command Summary
+			case '[': // I2C read commad
 				cliBusy = true;
-				cliPortPrint("Testing I2C2 Bus...\t");
-				if(i2cRead(I2C2, 0b1001000, 0x00, 1, &i2cReadBuff))
+
+				i2cTestAddress = readFloatCLI();
+				i2cTestRegister = readFloatCLI();
+				i2cTestDataLength = readFloatCLI();
+
+
+				cliPortPrintF("Reading I2C (add:%d, reg:%d, data:%d)\n", i2cTestAddress, i2cTestRegister, i2cTestDataLength);
+
+				if(i2cRead(I2C2, i2cTestAddress, i2cTestRegister, i2cTestDataLength, i2cTestData))
 					cliPortPrint("ACK!");
 				else
 					cliPortPrint("NACK!");
-				cliPortPrintF("\nRESULT = %3d\n", i2cReadBuff);
+				for(i2cIndexer = 0; i2cIndexer < i2cTestDataLength; i2cIndexer++)
+					cliPortPrintF("Received: %d\n", i2cTestData[i2cIndexer]);
 				cliBusy = false;
+				cliQuery = 'x';
+				validCliCommand = false;
 				break;
 
 				///////////////////////////////
 
-			case ']': // Command Summary
+			case ']': // I2C write command
 				cliBusy = true;
-				cliPortPrint("Testing I2C2 Bus...\t");
-				if(i2cRead(I2C2, 0b1001100, 0x00, 1, &i2cReadBuff))
+
+				i2cTestAddress = readFloatCLI();
+				i2cTestRegister = readFloatCLI();
+				i2cTestDataLength = readFloatCLI();
+
+				cliPortPrintF("Writing I2C (add:%d, reg:%d, data:%d)\n", i2cTestAddress, i2cTestRegister, i2cTestDataLength);
+
+				if(i2cWriteBuffer(I2C2, i2cTestAddress, i2cTestRegister, i2cTestDataLength, i2cTestData))
 					cliPortPrint("ACK!");
 				else
 					cliPortPrint("NACK!");
-				cliPortPrintF("\nRESULT = %3d\n", i2cReadBuff);
 				cliBusy = false;
+				cliQuery = 'x';
+				validCliCommand = false;
+				break;
+
+
+				///////////////////////////////
+
+			case '=': // Print all ESB data
+				//updateMLX90614();
+				cliPortPrintF("MLX90614[AMB:%d,OBJ:%d]\n", mlxRawAmbTemp, mlxRawObjTemp);
+				cliPortPrintF("MLX90614[AMB:%f*C,OBJ:%f*C]\n", mlxAmbTempC, mlxObjTempC);
+				cliQuery = 'x';
+				validCliCommand = false;
 				break;
 
 				///////////////////////////////

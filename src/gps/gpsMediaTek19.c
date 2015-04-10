@@ -203,8 +203,8 @@ uint8_t decodeMediaTek3329BinaryMsg(void)
 					gps.numSats     = GPS_INVALID_SATS;
 					gps.fix         = GPS_INVALID_FIX;
 					gps.year        = GPS_INVALID_DATE;
-					gps.month        = GPS_INVALID_DATE;
-					gps.day        = GPS_INVALID_DATE;
+					//gps.month        = GPS_INVALID_DATE;
+					//gps.day        = GPS_INVALID_DATE;
 					gps.iTOW        = GPS_INVALID_TIME;
 					gps.hDop        = GPS_INVALID_HDOP;
 				}

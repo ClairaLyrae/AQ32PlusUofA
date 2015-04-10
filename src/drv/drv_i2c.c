@@ -571,7 +571,7 @@ void i2cInit(I2C_TypeDef *I2C)
 
         I2C_DeInit(I2C2);
 
-        I2C_InitStructure.I2C_ClockSpeed          = 400000;
+        I2C_InitStructure.I2C_ClockSpeed          = 100000;
         I2C_InitStructure.I2C_Mode                = I2C_Mode_I2C;
         I2C_InitStructure.I2C_DutyCycle           = I2C_DutyCycle_2;
         I2C_InitStructure.I2C_OwnAddress1         = 0;
