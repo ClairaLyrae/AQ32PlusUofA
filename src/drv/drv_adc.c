@@ -40,10 +40,6 @@
 //  ADC Defines and Variables
 ///////////////////////////////////////////////////////////////////////////////
 
-#define AGL_SCALE_FACTOR  3.125f  // mV to meters, 3.2 mV = 1 cm
-
-///////////////////////////////////////
-
 #define ADC_PIN_1_CONVERTED_VALUE 0  // Default use: Analog Ultrasonic Input
 #define ADC_PIN_2_CONVERTED_VALUE 0  // Default use: N/A
 #define ADC_PIN_3_CONVERTED_VALUE 1  // Default use: N/A
@@ -284,15 +280,6 @@ float adcValue(uint8_t pin)
 	}
 	else return 0.0f;
 
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AGL Read
-///////////////////////////////////////////////////////////////////////////////
-
-float aglRead(void)
-{
-    return constrain(adcValue(eepromConfig.aglPin) * VOLTS_PER_BIT * eepromConfig.aglScale + eepromConfig.aglBias, 0.0f, 7.0f);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

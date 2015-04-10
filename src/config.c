@@ -303,31 +303,31 @@ void checkFirstTime(bool eepromReset)
 
         ///////////////////////////////
 
-        eepromConfig.PID[ROLL_RATE_PID].P                =  250.0f;
+        eepromConfig.PID[ROLL_RATE_PID].P                =  175.0f;
         eepromConfig.PID[ROLL_RATE_PID].I                =  100.0f;
-        eepromConfig.PID[ROLL_RATE_PID].D                =    0.0f;
+        eepromConfig.PID[ROLL_RATE_PID].D                =    2.0f;
         eepromConfig.PID[ROLL_RATE_PID].Limit            = 1000.0f * eepromConfig.rollAndPitchRateScaling * eepromConfig.PID[ROLL_RATE_PID].P ;
         eepromConfig.PID[ROLL_RATE_PID].integratorState  =    0.0f;
         eepromConfig.PID[ROLL_RATE_PID].filterState      =    0.0f;
         eepromConfig.PID[ROLL_RATE_PID].prevResetState   =   false;
 
-        eepromConfig.PID[PITCH_RATE_PID].P               =  250.0f;
+        eepromConfig.PID[PITCH_RATE_PID].P               =  175.0f;
         eepromConfig.PID[PITCH_RATE_PID].I               =  100.0f;
-        eepromConfig.PID[PITCH_RATE_PID].D               =    0.0f;
+        eepromConfig.PID[PITCH_RATE_PID].D               =    2.0f;
         eepromConfig.PID[PITCH_RATE_PID].Limit           = 1000.0f * eepromConfig.rollAndPitchRateScaling * eepromConfig.PID[PITCH_RATE_PID].P;
         eepromConfig.PID[PITCH_RATE_PID].integratorState =    0.0f;
         eepromConfig.PID[PITCH_RATE_PID].filterState     =    0.0f;
         eepromConfig.PID[PITCH_RATE_PID].prevResetState  =   false;
 
-        eepromConfig.PID[YAW_RATE_PID].P                 =  350.0f;
+        eepromConfig.PID[YAW_RATE_PID].P                 =  175.0f;
         eepromConfig.PID[YAW_RATE_PID].I                 =  100.0f;
-        eepromConfig.PID[YAW_RATE_PID].D                 =    0.0f;
+        eepromConfig.PID[YAW_RATE_PID].D                 =    2.0f;
         eepromConfig.PID[YAW_RATE_PID].Limit             =  1000.0f * eepromConfig.yawRateScaling * eepromConfig.PID[YAW_RATE_PID].P;
         eepromConfig.PID[YAW_RATE_PID].integratorState   =    0.0f;
         eepromConfig.PID[YAW_RATE_PID].filterState       =    0.0f;
         eepromConfig.PID[YAW_RATE_PID].prevResetState    =   false;
 
-        eepromConfig.PID[ROLL_ATT_PID].P                 =    2.0f;
+        eepromConfig.PID[ROLL_ATT_PID].P                 =    1.0f;
         eepromConfig.PID[ROLL_ATT_PID].I                 =    0.0f;
         eepromConfig.PID[ROLL_ATT_PID].D                 =    0.0f;
         eepromConfig.PID[ROLL_ATT_PID].Limit             = 1000.0f * eepromConfig.attitudeScaling * eepromConfig.PID[ROLL_ATT_PID].P;
@@ -453,8 +453,8 @@ void checkFirstTime(bool eepromReset)
         // this will damage the analog input or not.
 
         eepromConfig.aglPin                 = 1;
-		eepromConfig.aglScale               = 3.125f;  // mV to meters, 3.2 mV = 1 cm
-        eepromConfig.aglBias                = 0.0f;
+		eepromConfig.aglScale               = 2.45f;  // mV to meters, 2.45 mV = 1 cm
+        eepromConfig.aglBias                = -0.123f;
 
 		// Current monitoring defaults to off.
 		// The default scale factor of 27.322404

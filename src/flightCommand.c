@@ -50,7 +50,6 @@ uint8_t  previousCommandInDetent[3] = { true, true, true };
 ///////////////////////////////////////////////////////////////////////////////
 
 uint8_t flightMode = RATE;
-
 uint8_t headingHoldEngaged     = false;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -86,12 +85,14 @@ void processFlightCommands(void)
 
     float hdgDelta, simpleX, simpleY;
 
+    // RC Receiver active
     if ( rcActive == true )
     {
-		// Read receiver commands
-    	if (eepromConfig.receiverType == PPM)
-    		channelsToRead = eepromConfig.ppmChannels;
+		// PPM channel (not implemented)
+    	//if (eepromConfig.receiverType == PPM)
+    	//	channelsToRead = eepromConfig.ppmChannels;
 
+    	// Read all receiver channel values
 		for (channel = 0; channel < channelsToRead; channel++)
 		{
 			if (eepromConfig.receiverType == SPEKTRUM)
@@ -102,10 +103,12 @@ void processFlightCommands(void)
 			    rxCommand[channel] = rxRead(eepromConfig.rcMap[channel]);
 		}
 
+		// Center flight command inputs around configured midpoint (zero)
         rxCommand[ROLL]  -= eepromConfig.midCommand;  // Roll Range  -1000:1000
         rxCommand[PITCH] -= eepromConfig.midCommand;  // Pitch Range -1000:1000
         rxCommand[YAW]   -= eepromConfig.midCommand;  // Yaw Range   -1000:1000
 
+        // Unknown?
 		for (channel = 3; channel < channelsToRead; channel++)
 			rxCommand[channel] -= eepromConfig.midCommand - MIDCOMMAND;  // Range 2000:4000
     }
@@ -146,6 +149,7 @@ void processFlightCommands(void)
 		{
 			disarmingTimer++;
 
+			// Count up to value before disarming
 			if (disarmingTimer > eepromConfig.disarmCount)
 			{
 				zeroPIDstates();
@@ -154,24 +158,21 @@ void processFlightCommands(void)
 			}
 		}
 		else
-		{
 			disarmingTimer = 0;
-		}
 
 		// Check for gyro bias command ( low throttle, left yaw, aft pitch, right roll )
-		if ( (rxCommand[YAW  ] < (eepromConfig.minCheck - MIDCOMMAND)) &&
-		     (rxCommand[ROLL ] > (eepromConfig.maxCheck - MIDCOMMAND)) &&
-		     (rxCommand[PITCH] < (eepromConfig.minCheck - MIDCOMMAND)) )
+		if ( (rxCommand[YAW  ] < (eepromConfig.minCheck - MIDCOMMAND)) && (rxCommand[ROLL ] > (eepromConfig.maxCheck - MIDCOMMAND)) && (rxCommand[PITCH] < (eepromConfig.minCheck - MIDCOMMAND)) )
 		{
 			computeMPU6000RTData();
 			pulseMotors(3);
 		}
 
-		// Check for arm command ( low throttle, right yaw)
+		// Check for arm command (low throttle, right yaw)
 		if ((rxCommand[YAW] > (eepromConfig.maxCheck - MIDCOMMAND) ) && (armed == false) && (execUp == true))
 		{
 			armingTimer++;
 
+			// Count up to value before arming
 			if (armingTimer > eepromConfig.armCount)
 			{
 				zeroPIDstates();
@@ -180,9 +181,7 @@ void processFlightCommands(void)
 			}
 		}
 		else
-		{
 			armingTimer = 0;
-		}
 	}
 
 	///////////////////////////////////
@@ -198,7 +197,6 @@ void processFlightCommands(void)
 
     // Check AUX1 for rate, attitude, or GPS mode (3 Position Switch) NOT COMPLETE YET....
     //AUX1(D) O(Rate)->2043 1(attitude)->3013 2(GPS&Att)->4081
-
 
 	if ((rxCommand[AUX1] > MIDCOMMAND) && (flightMode == RATE))
 	{
@@ -219,18 +217,17 @@ void processFlightCommands(void)
 
 	// Check yaw in detent and flight mode to determine hdg hold engaged state
 
-		if ((commandInDetent[YAW] == true) && (flightMode == ATTITUDE) && (headingHoldEngaged == false))
-		{
-			headingHoldEngaged = true;
-		    setPIDstates(HEADING_PID,  0.0f);
-	        setPIDstates(YAW_RATE_PID, 0.0f);
-	        headingReference = heading.mag;
-		}
-
-		if (((commandInDetent[YAW] == false) || (flightMode != ATTITUDE)) && (headingHoldEngaged == true))
-		{
-		    headingHoldEngaged = false;
-		}
+	if ((commandInDetent[YAW] == true) && (flightMode == ATTITUDE) && (headingHoldEngaged == false))
+	{
+		headingHoldEngaged = true;
+		setPIDstates(HEADING_PID,  0.0f);
+		setPIDstates(YAW_RATE_PID, 0.0f);
+		headingReference = heading.mag;
+	}
+	if (((commandInDetent[YAW] == false) || (flightMode != ATTITUDE)) && (headingHoldEngaged == true))
+	{
+		headingHoldEngaged = false;
+	}
 
 	///////////////////////////////////
 
@@ -238,16 +235,14 @@ void processFlightCommands(void)
 
 	if (rxCommand[AUX3] > MIDCOMMAND)
 	{
+		// Compute heading error term based on attitude and known home heading
         hdgDelta = sensors.attitude500Hz[YAW] - homeData.magHeading;
-
         hdgDelta = standardRadianFormat(hdgDelta);
 
         simpleX = cosf(hdgDelta) * rxCommand[PITCH] + sinf(hdgDelta) * rxCommand[ROLL ];
-
         simpleY = cosf(hdgDelta) * rxCommand[ROLL ] - sinf(hdgDelta) * rxCommand[PITCH];
 
         rxCommand[ROLL ] = simpleY;
-
         rxCommand[PITCH] = simpleX;
 	}
 
@@ -270,19 +265,15 @@ void processFlightCommands(void)
   	{
   	    vertRefCmdInDetent = false;
   	    if (verticalReferenceCommand > 0)
-  	    {
   		    verticalReferenceCommand = (verticalReferenceCommand - ALT_DEADBAND) * ALT_DEADBAND_SLOPE;
-  	    }
   	    else
-  	    {
   	        verticalReferenceCommand = (verticalReferenceCommand + ALT_DEADBAND) * ALT_DEADBAND_SLOPE;
-  	    }
     }
 
     ///////////////////////////////////
 
     // Vertical Mode State Machine
-    //Aux2(A) 0->2211 1-> 3994
+    // Aux2(A) 0->2211 1-> 3994
 
     switch (verticalModeState)
 	{

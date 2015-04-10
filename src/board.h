@@ -86,6 +86,7 @@
 #include "drv_uart3.h"
 #include "drv_usb.h"
 
+#include "rangefinder.h"
 #include "hmc5883.h"
 #include "mpu6000.h"
 #include "ms5611_I2C.h"
@@ -94,6 +95,8 @@
 
 #include "mlx90614_I2C.h"
 #include "esb.h"
+
+#include "camera_VISCA.h"
 
 #include "gps.h"
 #include "gpsNMEA.h"

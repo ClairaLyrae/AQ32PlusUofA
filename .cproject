@@ -88,6 +88,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/AQ32PlusUofA/src/mavlink/common}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/AQ32PlusUofA/src/mavlink/firebird}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/AQ32PlusUofA/src/gps}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/AQ32PlusUofA/src/camera}&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.134647418" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="STM32F40XX"/>

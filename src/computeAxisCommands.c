@@ -39,67 +39,77 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 float   attCmd[3];
-
 float   attPID[3];
-
 float   ratePID[3];
-
 float   rateCmd[3];
-
 float   headingReference;
-
 float   altitudeHoldReference;
-
 float   throttleReference;
-
 float   verticalVelocityCmd;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Compute Axis Commands
 ///////////////////////////////////////////////////////////////////////////////
-
 void computeAxisCommands(float dt)
 {
     float error;
     float tempAttCompensation;
 
-    if (flightMode == ATTITUDE)
-    {
-        attCmd[ROLL ] = rxCommand[ROLL ] * eepromConfig.attitudeScaling;
-        attCmd[PITCH] = rxCommand[PITCH] * eepromConfig.attitudeScaling;
-    }
+	///////////////////////////////////
 
+    // Attitude mode is ON, apply attitude stabilization to input commands BEFORE rate calculations
     if (flightMode >= ATTITUDE)
     {
+        if (flightMode == ATTITUDE)
+        {
+            // Scale user input in attitude mode
+            attCmd[ROLL ] = rxCommand[ROLL ] * eepromConfig.attitudeScaling;
+            attCmd[PITCH] = rxCommand[PITCH] * eepromConfig.attitudeScaling;
+        }
+
+        // Compute error terms for roll and pitch in attitude mode (User input compared to vehicle attitude)
+        // Apply error terms to PID controllers as feedback
+
         error = standardRadianFormat(attCmd[ROLL] - sensors.attitude500Hz[ROLL]);
-        attPID[ROLL]  = updatePID(error, dt, pidReset, &eepromConfig.PID[ROLL_ATT_PID ]);
+        attPID[ROLL]  = updatePID(error, dt, pidReset, &eepromConfig.PID[ROLL_ATT_PID]);
 
         error = standardRadianFormat(attCmd[PITCH] + sensors.attitude500Hz[PITCH]);
         attPID[PITCH] = updatePID(error, dt, pidReset, &eepromConfig.PID[PITCH_ATT_PID]);
     }
 
+    // Rate mode is ON
     if (flightMode == RATE)
     {
+        // Scale user input in rate mode
         rateCmd[ROLL ] = rxCommand[ROLL ] * eepromConfig.rollAndPitchRateScaling;
         rateCmd[PITCH] = rxCommand[PITCH] * eepromConfig.rollAndPitchRateScaling;
     }
+
+    // Attitude mode is ON
     else
     {
+        // Take control input from output of attitude PIDs
         rateCmd[ROLL ] = attPID[ROLL ];
         rateCmd[PITCH] = attPID[PITCH];
     }
 
     ///////////////////////////////////
 
-    if (headingHoldEngaged == true)  // Heading Hold is ON
+    // Heading Hold is ON, compute error term for yaw, apply to PID, and use PID calculation for output
+    if (headingHoldEngaged == true)
     {
     	error = standardRadianFormat(headingReference - heading.mag);
         rateCmd[YAW] = updatePID(error, dt, pidReset, &eepromConfig.PID[HEADING_PID]);
     }
-    else                             // Heading Hold is OFF
+    // Heading Hold is OFF, get yaw direct from user input
+    else
 	    rateCmd[YAW] = rxCommand[YAW] * eepromConfig.yawRateScaling;
 
 	///////////////////////////////////
+
+    // Compute error terms for roll, pitch and yaw from rate OR attitude inputs found above
+    // Apply error terms to rate PID controllers as feedback based on gyro data
+    // Rate PIDs based off error on gyro only
 
     error = rateCmd[ROLL] - sensors.gyro500Hz[ROLL];
     ratePID[ROLL] = updatePID(error, dt, pidReset, &eepromConfig.PID[ROLL_RATE_PID ]);
@@ -112,26 +122,34 @@ void computeAxisCommands(float dt)
 
 	///////////////////////////////////
 
-	if (verticalModeState == ALT_DISENGAGED_THROTTLE_ACTIVE)            // Manual Mode is ON
+    // Manual Mode is ON, no altitude hold
+	if (verticalModeState == ALT_DISENGAGED_THROTTLE_ACTIVE)
 	    throttleCmd = rxCommand[THROTTLE];
 	else
 	{
-	    if ((verticalModeState == ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT) ||  // Altitude Hold is ON
-	        (verticalModeState == ALT_HOLD_AT_REFERENCE_ALTITUDE)   ||
-	        (verticalModeState == ALT_DISENGAGED_THROTTLE_INACTIVE))
+		// Altitude Hold is ON
+	    if ((verticalModeState == ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT) || (verticalModeState == ALT_HOLD_AT_REFERENCE_ALTITUDE) || (verticalModeState == ALT_DISENGAGED_THROTTLE_INACTIVE))
         {
+	    	// Compute error term for altitude position based off height estimation from sensors
+	    	// Use as feedback to vertical position hold PID, which serves as input to vertical velocity PID
+	    	// altitudeHoldReference depends on particular type of altitude hold enabled (fixed, at engagement, or throttle inactive)
+
             error = altitudeHoldReference - hEstimate;
 			verticalVelocityCmd = updatePID(error, dt, pidReset, &eepromConfig.PID[H_PID]);
 		}
-	    else                                                            // Vertical Velocity Hold is ON
+	    // Vertical Velocity Hold is ON
+	    else
 	    {
+	    	// Get vertical velocity directly from velocity reference command (user input)
 	        verticalVelocityCmd = verticalReferenceCommand * eepromConfig.hDotScaling;
 	    }
 
+	    // Compute error term for vertical velocity hold PID based of estimated vertical velocity (hDot)
+	    // Use as feedback to vertical velocity hold PID
     	error = verticalVelocityCmd - hDotEstimate;
 		throttleCmd = throttleReference + updatePID(error, dt, pidReset, &eepromConfig.PID[HDOT_PID]);
 
-	     // Get Roll Angle, Constrain to +/-20 degrees (default)
+	    // Get Roll Angle, Constrain to +/-20 degrees (default)
 	    tempAttCompensation = constrain(sensors.attitude500Hz[ROLL ], eepromConfig.rollAttAltCompensationLimit,  -eepromConfig.rollAttAltCompensationLimit);
 
 	    // Compute Cosine of Roll Angle and Multiply by Att-Alt Gain
@@ -149,6 +167,8 @@ void computeAxisCommands(float dt)
 	    // Apply Pitch Att Compensation to Throttle Command
 	    throttleCmd *= tempAttCompensation;
 	}
+
+	///////////////////////////////////
 }
 
 ///////////////////////////////////////////////////////////////////////////////

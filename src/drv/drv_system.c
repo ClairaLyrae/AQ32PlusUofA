@@ -43,12 +43,8 @@
 #define DWT_CYCCNT  ((volatile uint32_t *)0xE0001004)
 #define CYCCNTENA   (1 << 0)
 
-///////////////////////////////////////////////////////////////////////////////
-
 // Cycles per microsecond
 static volatile uint32_t usTicks = 0;
-
-///////////////////////////////////////////////////////////////////////////////
 
 // Current uptime for 1kHz systick timer. will rollover after 49 days.
 // Hopefully we won't care.
@@ -273,7 +269,6 @@ void checkResetType()
     uint32_t rst = RCC->CSR;
 
     evrPush(( rst & (RCC_CSR_PORRSTF | RCC_CSR_PADRSTF | RCC_CSR_SFTRSTF) ) ? EVR_NormalReset : EVR_AbnormalReset , rst >> 24 );
-
     RCC_ClearFlag();
 }
 
@@ -282,8 +277,6 @@ void checkResetType()
 void systemInit(void)
 {
     RCC_ClocksTypeDef rccClocks;
-
-	///////////////////////////////////
 
 	// Init cycle counter
     cycleCounterInit();
@@ -327,9 +320,12 @@ void systemInit(void)
 
     ///////////////////////////////////
 
-    checkFirstTime(false);
+	// Initialize eeprom, optionally force write EEPROM at startup
+    checkFirstTime(_EEPROM_RESET);
+
 	readEEPROM();
 
+	// Check receiver binding (SPEKTRUM)
 	if (eepromConfig.receiverType == SPEKTRUM)
 		checkSpektrumBind();
 
@@ -337,101 +333,97 @@ void systemInit(void)
 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);  // 2 bits for pre-emption priority, 2 bits for subpriority
 
-	///////////////////////////////////
+    ///////////////////////////////////
 
+	// Set GPS to use UART2
 	gpsPortClearBuffer       = &uart2ClearBuffer;
     gpsPortNumCharsAvailable = &uart2NumCharsAvailable;
     gpsPortPrint	       = &uart2Print;
     gpsPortPrintF	       = &uart2PrintF;
+    gpsPortWrite	       = &uart2Write;
     gpsPortRead              = &uart2Read;
     gpsPortAvailable	       = &uart2Available;
-    gpsPortWrite	       = &uart2Write;
 
-    openLogPortPrintF        = &uart3PrintF;
-
-	///////////////////////////////////
-
+	// Set Camera to use UART3
+	cameraPortClearBuffer       = &uart3ClearBuffer;
+    cameraPortNumCharsAvailable = &uart3NumCharsAvailable;
+	cameraPortPrint	       = &uart3Print;
+	cameraPortPrintF	       = &uart3PrintF;
+	cameraPortWrite	       = &uart3Write;
+    cameraPortRead              = &uart3Read;
+    cameraPortAvailable	       = &uart3Available;
+    
 	initMixer();
-
     ledInit();
 
+	// Initialize UART/USB ports
     usbInit();
-
     uart1Init();
     uart2Init();
     uart3Init();
+    checkUsbActive(true);	// Choose CLI port source
 
     ///////////////////////////////////
 
+    //delay(10000);  // 10 seconds of 20 second delay for sensor stabilization
     BLUE_LED_ON;
 
-    //TODO delay(10000);  // 10 seconds of 20 second delay for sensor stabilization
-
-    ///////////////////////////////////
-
-    checkUsbActive(true);
-
+    // Print system info
     #ifdef __VERSION__
         cliPortPrintF("\ngcc version " __VERSION__ "\n");
     #endif
 
-    cliPortPrintF("\nAQ32Plus Firmware V%s, Build Date " __DATE__ " "__TIME__" \n", __AQ32PLUS_VERSION);
-
+    cliPortPrintF("\nAQ32Plus (Firebird) Firmware V%s, Build Date " __DATE__ " "__TIME__" \n", __AQ32PLUS_VERSION);
     if ((RCC->CR & RCC_CR_HSERDY) != RESET)
-    {
         cliPortPrint("\nRunning on external HSE clock....\n");
-    }
     else
-    {
         cliPortPrint("\nERROR: Running on internal HSI clock....\n");
-    }
-
     RCC_GetClocksFreq(&rccClocks);
-
     cliPortPrintF("\nHCLK->   %3d MHz\n",   rccClocks.HCLK_Frequency   / 1000000);
     cliPortPrintF(  "PCLK1->  %3d MHz\n",   rccClocks.PCLK1_Frequency  / 1000000);
     cliPortPrintF(  "PCLK2->  %3d MHz\n",   rccClocks.PCLK2_Frequency  / 1000000);
     cliPortPrintF(  "SYSCLK-> %3d MHz\n\n", rccClocks.SYSCLK_Frequency / 1000000);
 
-    if (eepromConfig.receiverType == PPM)
-    	cliPortPrint("Using PPM Receiver....\n\n");
-    else if (eepromConfig.receiverType == PWM)
-        cliPortPrint("Using PWM Receiver....\n\n");
-    else if (eepromConfig.receiverType == SPEKTRUM)
-    	cliPortPrint("Using Spektrum Satellite Receiver....\n\n");
-    else if (eepromConfig.receiverType == SBUS)
-    	cliPortPrint("Using SBUS Receiver....\n\n");
-    else
-    	cliPortPrint("Error....\n\n");
-
-    initGPS();
-    //initUBLOX();
-
-    // TODO delay(10000);  // Remaining 10 seconds of 20 second delay for sensor stabilization - probably not long enough..
-
     ///////////////////////////////////
 
+    initGPS();
     adcInit();
     i2cInit(I2C1);
     i2cInit(I2C2);
     pwmServoInit();
 
-    if (eepromConfig.receiverType == SPEKTRUM)
-        spektrumInit();
-    else if (eepromConfig.receiverType == SBUS)
-    	sBusInit();
-    else
-        rxInit();
+    switch(eepromConfig.receiverType)
+    {
+        case PPM:
+        	cliPortPrint("Using PPM Receiver....\n\n");
+            rxInit();
+            break;
+        case PWM:
+            cliPortPrint("Using PWM Receiver....\n\n");
+            rxInit();
+            break;
+        case SPEKTRUM:
+        	cliPortPrint("Using Spektrum Satellite Receiver....\n\n");
+            spektrumInit();
+        	break;
+        case SBUS:
+        	cliPortPrint("Using SBUS Receiver....\n\n");
+        	sBusInit();
+        	break;
+        default:
+        	cliPortPrint("Unknown Receiver Type....\n\n");
+            rxInit();
+            break;
+    }
 
     spiInit(SPI1);
     spiInit(SPI2);
     spiInit(SPI3);
     timingFunctionsInit();
-
     batteryInit();
-
     initFirstOrderFilter();
     initMavlink();
+    initCamera();
     initMax7456();
     initPID();
 
@@ -440,16 +432,12 @@ void systemInit(void)
         case  0:
         	cliPortPrint("SD Card Initialization Failed....\n\n");
         	break;
-
         case  1:
         	cliPortPrint("SD Card Initialized, MMC Version 3....\n\n");
         	break;
-
         case  2:
         	cliPortPrint("SD Card Initialized, SD Version 1....\n\n");
         	break;
-
-        case  4:
         case 12:
         	cliPortPrint("SD Card Initialized, SD Version 2....\n\n");
         	break;
@@ -458,11 +446,9 @@ void systemInit(void)
     GREEN_LED_ON;
 
     orientSensors();
-
     initMPU6000();
     initMag();
     initPressure();
-
     initESB();
 }
 

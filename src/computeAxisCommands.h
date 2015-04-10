@@ -38,18 +38,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-extern float   attCmd[3];  // TODO: For telemetry only
-
-extern float   attPID[3];  // TODO: For telemetry only
-
+extern float   attCmd[3];  // Extern for telemetry output
+extern float   attPID[3];  // Extern for telemetry output
 extern float   ratePID[3];
-
-extern float   rateCmd[3]; // TODO: For telmetry only
-
+extern float   rateCmd[3]; // Extern for telemetry output
 extern float   verticalVelocityCmd;
-
 extern float   headingReference;
-
 extern float   altitudeHoldReference;
 extern float   throttleReference;
 

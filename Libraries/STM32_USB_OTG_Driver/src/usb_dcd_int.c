@@ -130,7 +130,7 @@ uint32_t USBD_OTG_EP1OUT_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
     if (pdev->cfg.dma_enable == 1)
     {
       deptsiz.d32 = USB_OTG_READ_REG32(&(pdev->regs.OUTEP_REGS[1]->DOEPTSIZ));
-      /*ToDo : handle more than one single MPS size packet */
+      /*Needs work... : handle more than one single MPS size packet */
       pdev->dev.out_ep[1].xfer_count = pdev->dev.out_ep[1].maxpacket - \
         deptsiz.b.xfersize;
     }    
@@ -523,7 +523,7 @@ static uint32_t DCD_HandleOutEP_ISR(USB_OTG_CORE_HANDLE *pdev)
         if (pdev->cfg.dma_enable == 1)
         {
           deptsiz.d32 = USB_OTG_READ_REG32(&(pdev->regs.OUTEP_REGS[epnum]->DOEPTSIZ));
-          /*ToDo : handle more than one single MPS size packet */
+          /*Needs work... : handle more than one single MPS size packet */
           pdev->dev.out_ep[epnum].xfer_count = pdev->dev.out_ep[epnum].maxpacket - \
             deptsiz.b.xfersize;
         }

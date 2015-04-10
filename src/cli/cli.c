@@ -55,17 +55,6 @@ uint8_t cliBusy = false;
 static volatile uint8_t cliQuery        = 'x';
 static volatile uint8_t validCliCommand = false;
 
-uint8_t gpsDataType = 0;
-
-uint8_t i2cTestAddress;
-uint8_t i2cTestRegister;
-uint8_t i2cTestDataLength;
-uint8_t i2cTestData[32];
-
-uint8_t i2cIndexer;
-
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // Read Character String from CLI
 ///////////////////////////////////////////////////////////////////////////////
@@ -153,6 +142,7 @@ void cliCom(void)
 	uint8_t i2cReadBuff; // TEMP
 	uint8_t  index;
 	uint8_t  numChannels = 8;
+
 	char mvlkToggleString[5] = { 0, 0, 0, 0, 0 };
 
 	if (eepromConfig.receiverType == PPM)
@@ -160,29 +150,28 @@ void cliCom(void)
 
 	if ((cliPortAvailable() && !validCliCommand))
     {
+		// Pull one character from buffer to find command
 		cliQuery = cliPortRead();
 
-        if (cliQuery == '#')                       // Check to see if we should toggle mavlink msg state
+		// Check to see if we should toggle MAVLink state (pound sign)
+        if (cliQuery == '#')
         {
 	    	while (cliPortAvailable == false);
 
+	    	// Check to see if we have 4 pound signs
         	readStringCLI(mvlkToggleString, 5);
-
             if ((mvlkToggleString[0] == '#') &&
             	(mvlkToggleString[1] == '#') &&
                 (mvlkToggleString[2] == '#') &&
                 (mvlkToggleString[3] == '#'))
 	    	{
-	    	    if (eepromConfig.mavlinkEnabled == false)
-	    	    {
+            	// Toggle MAVLink
+	    	    if (eepromConfig.mavlinkEnabled == false) 
 	    	 	    eepromConfig.mavlinkEnabled  = true;
-	    		    eepromConfig.activeTelemetry = 0x0000;
-	    		}
 	    		else
-	    		{
 	    		    eepromConfig.mavlinkEnabled = false;
-	    	    }
 
+	    	    // Write EEPROM state if pounds were followed by W
 	    	    if (mvlkToggleString[4] == 'W')
 	    	    {
 	                cliPortPrint("\nWriting EEPROM Parameters....\n");
@@ -191,9 +180,9 @@ void cliCom(void)
 	    	}
 	    }
 	}
-
 	validCliCommand = false;
 
+	// If MAVLink is disabled and we aren't toggling MAVLink, assume CLI command
     if ((eepromConfig.mavlinkEnabled == false) && (cliQuery != '#'))
     {
         switch (cliQuery)
@@ -378,11 +367,6 @@ void cliCom(void)
 			///////////////////////////////
 
 			case 'n': // GPS Data
-				//cliPortPrint("Last Msg: ");
-				//cliPortPrint(sentenceBuffer);
-				//cliPortPrint("\nMsg Counter: ");
-				//cliPortPrintF("%d, %d", sentencesProcessed);
-				//cliPortPrint("\n");
 				cliPortPrintF("ITOW:%12ld, LAT:%12ld, LONG:%12ld, HEAD:%12ld, HEIGHT:%12ld, HMSL:%12ld, FIX:%4d, NUMSAT:%4d\n",
 						gps.iTOW,
 						gps.latitude,
@@ -405,14 +389,18 @@ void cliCom(void)
 
 			///////////////////////////////
 
-			case 'p': // Not Used
+			case 'p':
+				cameraCLI();
+
 				cliQuery = 'x';
 				validCliCommand = false;
 				break;
 
 			///////////////////////////////
 
-			case 'q': // Not Used
+			case 'q':
+				adcCLI();
+
 				cliQuery = 'x';
 				validCliCommand = false;
 				break;
@@ -821,7 +809,9 @@ void cliCom(void)
 
 			///////////////////////////////
 
-			case 'X': // Not Used
+			case 'X': // Environmental Sensor Bus CLI
+				esbCLI();
+
 				cliQuery = 'x';
 				validCliCommand = false;
 				break;
@@ -861,53 +851,18 @@ void cliCom(void)
 				cliPortPrint("'j' 10 hz Mag Data                         'J' Set n PID Data           JP;I;D;N\n");
 				cliPortPrint("'k' Vertical Axis Variable                 'K' Set e PID Data           KP;I;D;N\n");
 				cliPortPrint("'l' Attitudes                              'L' Set h PID Data           LP;I;D;N\n");
-				cliPortPrint("\n");
-
-				cliPortPrint("Press enter bar for more, or enter a command....\n");
-
-				while (cliPortAvailable() == false);
-
-				cliQuery = cliPortRead();
-
-
-				//cliPortPrintF("Character = %c", cliQuery);
-				if (!(cliQuery == '\n' || cliQuery == '\r'))
-				{
-					validCliCommand = true;
-					cliBusy = false;
-					return;
-				}
-
-				cliPortPrint("\n");
 				cliPortPrint("'m' Axis PIDs                              'M' MAX7456 CLI\n");
 				cliPortPrint("'n' GPS Data                               'N' Mixer CLI\n");
 				cliPortPrint("'o' Battery Voltage                        'O' Receiver CLI\n");
-				cliPortPrint("'p' Not Used                               'P' Sensor CLI\n");
-				cliPortPrint("'q' Not Used                               'Q' GPS Data Selection\n");
+				cliPortPrint("'p' Camera CLI                             'P' Sensor CLI\n");
+				cliPortPrint("'q' ADC CLI                                'Q' GPS Data Selection\n");
 				cliPortPrint("'r' Mode States                            'R' Reset and Enter Bootloader\n");
 				cliPortPrint("'s' Raw Receiver Commands                  'S' Reset\n");
 				cliPortPrint("'t' Processed Receiver Commands            'T' Telemetry CLI\n");
 				cliPortPrint("'u' Command In Detent Discretes            'U' EEPROM CLI\n");
 				cliPortPrint("'v' Motor PWM Outputs                      'V' Reset EEPROM Parameters\n");
 				cliPortPrint("'w' Servo PWM Outputs                      'W' Write EEPROM Parameters\n");
-				cliPortPrint("'x' Terminate Serial Communication         'X' Not Used\n");
-				cliPortPrint("\n");
-
-				cliPortPrint("Press enter for more, or enter a command....\n");
-
-				while (cliPortAvailable() == false);
-
-				cliQuery = cliPortRead();
-
-				//cliPortPrintF("Character = %c", cliQuery);
-				if (!(cliQuery == '\n' || cliQuery == '\r'))
-				{
-					validCliCommand = true;
-					cliBusy = false;
-					return;
-				}
-
-				cliPortPrint("\n");
+				cliPortPrint("'x' Terminate Serial Communication         'X' ESB CLI\n");
 				cliPortPrint("'y' ESC Calibration/Motor Verification     'Y' ADC CLI\n");
 				cliPortPrint("'z' ADC Values                             'Z' WMM Test\n");
 				cliPortPrint("                                           '?' Command Summary\n");
@@ -917,72 +872,7 @@ void cliCom(void)
 				cliBusy = false;
 				break;
 
-				///////////////////////////////
-
-			case '[': // I2C read commad
-				cliBusy = true;
-
-				i2cTestAddress = readFloatCLI();
-				i2cTestRegister = readFloatCLI();
-				i2cTestDataLength = readFloatCLI();
-
-
-				cliPortPrintF("Reading I2C (add:%d, reg:%d, data:%d)\n", i2cTestAddress, i2cTestRegister, i2cTestDataLength);
-
-				if(i2cRead(I2C2, i2cTestAddress, i2cTestRegister, i2cTestDataLength, i2cTestData))
-					cliPortPrint("ACK!");
-				else
-					cliPortPrint("NACK!");
-				for(i2cIndexer = 0; i2cIndexer < i2cTestDataLength; i2cIndexer++)
-					cliPortPrintF("Received: %d\n", i2cTestData[i2cIndexer]);
-				cliBusy = false;
-				cliQuery = 'x';
-				validCliCommand = false;
-				break;
-
-				///////////////////////////////
-
-			case ']': // I2C write command
-				cliBusy = true;
-
-				i2cTestAddress = readFloatCLI();
-				i2cTestRegister = readFloatCLI();
-				i2cTestDataLength = readFloatCLI();
-
-				cliPortPrintF("Writing I2C (add:%d, reg:%d, data:%d)\n", i2cTestAddress, i2cTestRegister, i2cTestDataLength);
-
-				if(i2cWriteBuffer(I2C2, i2cTestAddress, i2cTestRegister, i2cTestDataLength, i2cTestData))
-					cliPortPrint("ACK!");
-				else
-					cliPortPrint("NACK!");
-				cliBusy = false;
-				cliQuery = 'x';
-				validCliCommand = false;
-				break;
-
-
-				///////////////////////////////
-
-			case '=': // Print all ESB data
-				//updateMLX90614();
-				cliPortPrintF("MLX90614[AMB:%d,OBJ:%d]\n", mlxRawAmbTemp, mlxRawObjTemp);
-				cliPortPrintF("MLX90614[AMB:%f*C,OBJ:%f*C]\n", mlxAmbTempC, mlxObjTempC);
-				cliQuery = 'x';
-				validCliCommand = false;
-				break;
-
-				///////////////////////////////
-
-			case '|': // Command Summary
-				cliBusy = true;
-
-				cliPortPrintF("RawAccel = \t%d\t%d\t%d\n", (int)rawAccel[XAXIS], (int)rawAccel[YAXIS], (int)rawAccel[ZAXIS]);
-				cliPortPrintF("RawGyro = \t%d\t%d\t%d\n", (int)rawGyro[XAXIS], (int)rawGyro[YAXIS], (int)rawGyro[ZAXIS]);
-				cliPortPrintF("RawMag = \t%d\t%d\t%d\n", (int)rawMag[XAXIS], (int)rawMag[YAXIS], (int)rawMag[ZAXIS]);
-				cliPortPrintF("RawTemp = \t%d\n", rawMPU6000Temperature);
-
-				cliBusy = false;
-				break;
+			///////////////////////////////
 		}
     }
 }

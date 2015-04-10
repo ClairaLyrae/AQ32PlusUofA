@@ -129,8 +129,9 @@ void uart3Init(void)
     NVIC_InitTypeDef  NVIC_InitStructure;
 
     GPIO_PinAFConfig(UART3_GPIO, UART3_TX_PINSOURCE, GPIO_AF_USART3);
+    GPIO_PinAFConfig(UART3_GPIO, UART3_RX_PINSOURCE, GPIO_AF_USART3);
 
-    GPIO_InitStructure.GPIO_Pin   = UART3_TX_PIN;
+    GPIO_InitStructure.GPIO_Pin   = UART3_TX_PIN | UART3_RX_PIN;
     GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -150,10 +151,38 @@ void uart3Init(void)
     USART_InitStructure.USART_WordLength          = USART_WordLength_8b;
     USART_InitStructure.USART_StopBits            = USART_StopBits_1;
     USART_InitStructure.USART_Parity              = USART_Parity_No;
-    USART_InitStructure.USART_Mode                = USART_Mode_Tx;
+    USART_InitStructure.USART_Mode                = USART_Mode_Tx | USART_Mode_Rx;
     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 
     USART_Init(USART3, &USART_InitStructure);
+
+    // Receive DMA into a circular buffer
+
+    DMA_DeInit(DMA1_Stream1);
+
+    DMA_InitStructure.DMA_Channel            = DMA_Channel_4;
+    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&USART3->DR;
+    DMA_InitStructure.DMA_Memory0BaseAddr    = (uint32_t)rx3Buffer;
+    DMA_InitStructure.DMA_DIR                = DMA_DIR_PeripheralToMemory;
+    DMA_InitStructure.DMA_BufferSize         = UART3_BUFFER_SIZE;
+    DMA_InitStructure.DMA_PeripheralInc      = DMA_PeripheralInc_Disable;
+    DMA_InitStructure.DMA_MemoryInc          = DMA_MemoryInc_Enable;
+    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+    DMA_InitStructure.DMA_MemoryDataSize     = DMA_MemoryDataSize_Byte;
+    DMA_InitStructure.DMA_Mode               = DMA_Mode_Circular;
+    DMA_InitStructure.DMA_Priority           = DMA_Priority_Medium;
+    DMA_InitStructure.DMA_FIFOMode           = DMA_FIFOMode_Disable;
+    DMA_InitStructure.DMA_FIFOThreshold      = DMA_FIFOThreshold_1QuarterFull;
+    DMA_InitStructure.DMA_MemoryBurst        = DMA_MemoryBurst_Single;
+    DMA_InitStructure.DMA_PeripheralBurst    = DMA_PeripheralBurst_Single;
+
+    DMA_Init(DMA1_Stream1, &DMA_InitStructure);
+
+    DMA_Cmd(DMA1_Stream1, ENABLE);
+
+    USART_DMACmd(USART3, USART_DMAReq_Rx, ENABLE);
+
+    rx3DMAPos = DMA_GetCurrDataCounter(DMA1_Stream1);
 
     // Transmit DMA
     DMA_DeInit(DMA1_Stream3);
@@ -181,63 +210,6 @@ void uart3Init(void)
     DMA_ITConfig(DMA1_Stream3, DMA_IT_TC, ENABLE);
 
     USART_DMACmd(USART3, USART_DMAReq_Tx, ENABLE);
-
-    if (eepromConfig.receiverType != SPEKTRUM)
-    {
-		///////////////////////////////
-
-		// Turn off USART3 features used by Spektrum driver
-
-		USART_ITConfig(USART3, USART_IT_RXNE, DISABLE);
-
-		NVIC_InitStructure.NVIC_IRQChannel    = USART3_IRQn;
-		NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
-		NVIC_Init(&NVIC_InitStructure);
-
-		///////////////////////////////
-
-		GPIO_PinAFConfig(UART3_GPIO, UART3_RX_PINSOURCE, GPIO_AF_USART3);
-
-		GPIO_InitStructure.GPIO_Pin   = UART3_RX_PIN;
-      //GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
-	  //GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	  //GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	  //GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-
-		GPIO_Init(UART3_GPIO, &GPIO_InitStructure);
-
-        USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
-
-        USART_Init(USART3, &USART_InitStructure);
-
-        // Receive DMA into a circular buffer
-
-	    DMA_DeInit(DMA1_Stream1);
-
-	  //DMA_InitStructure.DMA_Channel            = DMA_Channel_4;
-	  //DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&USART3->DR;
-	    DMA_InitStructure.DMA_Memory0BaseAddr    = (uint32_t)rx3Buffer;
-	    DMA_InitStructure.DMA_DIR                = DMA_DIR_PeripheralToMemory;
-	  //DMA_InitStructure.DMA_BufferSize         = UART3_BUFFER_SIZE;
-	  //DMA_InitStructure.DMA_PeripheralInc      = DMA_PeripheralInc_Disable;
-	  //DMA_InitStructure.DMA_MemoryInc          = DMA_MemoryInc_Enable;
-	  //DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
-	  //DMA_InitStructure.DMA_MemoryDataSize     = DMA_MemoryDataSize_Byte;
-	    DMA_InitStructure.DMA_Mode               = DMA_Mode_Circular;
-	  //DMA_InitStructure.DMA_Priority           = DMA_Priority_Medium;
-	  //DMA_InitStructure.DMA_FIFOMode           = DMA_FIFOMode_Disable;
-	  //DMA_InitStructure.DMA_FIFOThreshold      = DMA_FIFOThreshold_1QuarterFull;
-	  //DMA_InitStructure.DMA_MemoryBurst        = DMA_MemoryBurst_Single;
-	  //DMA_InitStructure.DMA_PeripheralBurst    = DMA_PeripheralBurst_Single;
-
-	    DMA_Init(DMA1_Stream1, &DMA_InitStructure);
-
-	    DMA_Cmd(DMA1_Stream1, ENABLE);
-
-	    USART_DMACmd(USART3, USART_DMAReq_Rx, ENABLE);
-
-        rx3DMAPos = DMA_GetCurrDataCounter(DMA1_Stream1);
-	}
 
 	USART_Cmd(USART3, ENABLE);
 
@@ -366,3 +338,4 @@ void uart3PrintBinary(uint8_t *buf, uint16_t length)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+

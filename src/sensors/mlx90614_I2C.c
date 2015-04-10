@@ -1,15 +1,3 @@
-/*
- * Gas Sensor Board
- *
- * Author:
- * Claira Safi
- *
- * TODO:
- * Requires testing to see if it works. Also requires testing to make sure
- * I2C restart is being sent as it it necessary for the mlx sensor to
- * correctly interpret the read command
- */
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "board.h"

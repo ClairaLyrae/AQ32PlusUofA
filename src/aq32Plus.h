@@ -42,28 +42,23 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-extern void     (*openLogPortPrintF)(const char * fmt, ...);
+// Compilation options
+#define _EEPROM_RESET 	true
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// Constants/Macros
 #ifndef PI
-    #define PI  3.14159265358979f
+    #define PI  		3.14159265358979f
 #endif
+#define TWO_PI 			(2.0f * PI)
+#define D2R  			(PI / 180.0f)
+#define R2D  			(180.0f / PI)
+#define KNOTS2MPS 		0.51444444f
+#define EARTH_RADIUS 	6371000f
+#define SQR(x)  		((x) * (x))
 
-#define TWO_PI (2.0f * PI)
-
-#define D2R  (PI / 180.0f)
-
-#define R2D  (180.0f / PI)
-
-#define KNOTS2MPS 0.51444444f
-
-#define EARTH_RADIUS 6371000f
-
-#define SQR(x)  ((x) * (x))
-
-///////////////////////////////////////////////////////////////////////////////
-
+// Receiver control indices
 #define ROLL     0
 #define PITCH    1
 #define YAW      2
@@ -77,10 +72,12 @@ extern void     (*openLogPortPrintF)(const char * fmt, ...);
 #define AUX7     10
 #define AUX8     11
 
+// Axis indices
 #define XAXIS    0
 #define YAXIS    1
 #define ZAXIS    2
 
+// Receiver defaults
 #define MINCOMMAND  2000
 #define MIDCOMMAND  3000
 #define MAXCOMMAND  4000
@@ -433,11 +430,8 @@ typedef struct eepromConfig_t
 
     ///////////////////////////////////
 
-    uint16_t activeTelemetry;
-
-    uint8_t  mavlinkEnabled;
-
-    // TODO Added
+    uint8_t activeTelemetry;
+    uint8_t mavlinkEnabled;
     uint8_t	gpsType;
 
     ///////////////////////////////////

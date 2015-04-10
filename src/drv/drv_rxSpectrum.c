@@ -274,7 +274,7 @@ void spektrumParser(uint8_t c, spektrumStateType* spektrumState, bool slaveRecei
 	    }
 	    else
 	    {
-	      // @todo collect more data. I suspect that there is a low res
+	      // Collect more data. I suspect that there is a low res
 	      // protocol that is still 10 bit but without using the full range.
 
 	      tmpEncType   = (c & 0x10)>>4;  // 0 = 10bit, 1 = 11 bit

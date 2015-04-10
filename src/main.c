@@ -41,39 +41,30 @@
 __attribute__((__section__(".eeprom"), used)) const int8_t eepromArray[16384];
 
 eepromConfig_t eepromConfig;
-
 uint8_t        execUpCount = 0;
-
 sensors_t      sensors;
-
 heading_t      heading;
-
 gps_t          gps;
-
 homeData_t     homeData;
-
 uint16_t       timerValue;
-
-void           (*openLogPortPrintF)(const char * fmt, ...);
 
 ///////////////////////////////////////////////////////////////////////////////
 
 int main(void)
 {
-    ///////////////////////////////////////////////////////////////////////////
-
     uint32_t currentTime;
 
+    // Matrix variables
 	arm_matrix_instance_f32 a;
 	arm_matrix_instance_f32 b;
 	arm_matrix_instance_f32 x;
 
+	// Initialize system
     systemReady = false;
-
     systemInit();
-
     systemReady = true;
 
+    // Call main program start event
     evrPush(EVR_StartingMain, 0);
 
     #ifdef _DTIMING
@@ -106,19 +97,19 @@ int main(void)
 
         // Init pins
         GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1;
-      //GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
-      //GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-      //GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-      //GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+        //GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
+        //GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        //GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        //GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
 
         GPIO_Init(GPIOB, &GPIO_InitStructure);
 
         // Init pins
         GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_5;
-      //GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
-      //GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-      //GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-      //GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+        //GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
+        //GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        //GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        //GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
 
         GPIO_Init(GPIOC, &GPIO_InitStructure);
 
@@ -130,12 +121,15 @@ int main(void)
 
     #endif
 
+    // Main loop
     while (1)
     {
-        checkUsbActive(false);
 
-        evrCheck();
+        checkUsbActive(false);	// Check CLI/USB connection
+        evrCheck();	// Update event listeners
 
+        ///////////////////////////////
+        //	50 Hz Execution Tick
         ///////////////////////////////
 
         if (frame_50Hz)
@@ -143,15 +137,18 @@ int main(void)
             #ifdef _DTIMING
                 LA2_ENABLE;
             #endif
-
             frame_50Hz = false;
 
+            // Update delta time for real-time calculations
             currentTime      = micros();
             deltaTime50Hz    = currentTime - previous50HzTime;
             previous50HzTime = currentTime;
 
+            // Process RC Receiver commands
             processFlightCommands();
 
+            // Update altitude/temperature measurements
+            aglRead();
             if (newTemperatureReading && newPressureReading)
             {
                 d1Value = d1.value;
@@ -163,13 +160,16 @@ int main(void)
                 newTemperatureReading = false;
                 newPressureReading    = false;
             }
-
             sensors.pressureAlt50Hz = firstOrderFilter(sensors.pressureAlt50Hz, &firstOrderFilters[PRESSURE_ALT_LOWPASS]);
 
-            rssiMeasure();
+            // Measure RSSI (Received Signal Strength Indication) of RC receiver (Not supported by SPEKTRUM)
+            if(eepromConfig.receiverType != SPEKTRUM)
+            	rssiMeasure();
 
-            updateMax7456(currentTime, 0);
+            // Update MAX7456 On-Screen Display IC (Not used)
+            //updateMax7456(currentTime, 0);
 
+            // Calculate execution tick process time
             executionTime50Hz = micros() - currentTime;
 
             #ifdef _DTIMING
@@ -178,76 +178,57 @@ int main(void)
         }
 
         ///////////////////////////////
+        //	10 Hz Execution Tick
+        ///////////////////////////////
 
         if (frame_10Hz)
         {
             #ifdef _DTIMING
                 LA4_ENABLE;
             #endif
-
             frame_10Hz = false;
 
+            // Update delta time for real-time calculations
             currentTime      = micros();
             deltaTime10Hz    = currentTime - previous10HzTime;
             previous10HzTime = currentTime;
 
+            // Update magnetometer data
             if (newMagData == true)
             {
+            	// Apply biases
 			    nonRotatedMagData[XAXIS] = (rawMag[XAXIS].value * magScaleFactor[XAXIS]) - eepromConfig.magBias[XAXIS + eepromConfig.externalHMC5883];
 			    nonRotatedMagData[YAXIS] = (rawMag[YAXIS].value * magScaleFactor[YAXIS]) - eepromConfig.magBias[YAXIS + eepromConfig.externalHMC5883];
 			    nonRotatedMagData[ZAXIS] = (rawMag[ZAXIS].value * magScaleFactor[ZAXIS]) - eepromConfig.magBias[ZAXIS + eepromConfig.externalHMC5883];
 
+			    // Orient raw magnetometer data based on device orientation
 			    arm_mat_init_f32(&a, 3, 3, (float *)hmcOrientationMatrix);
-
 			    arm_mat_init_f32(&b, 3, 1, (float *)nonRotatedMagData);
-
 			    arm_mat_init_f32(&x, 3, 1,          sensors.mag10Hz);
-
 			    arm_mat_mult_f32(&a, &b, &x);
 
+			    // New mag data available
 				newMagData = false;
 			    magDataUpdate = true;
             }
 
-        	switch (eepromConfig.gpsType)
-			{
-			    ///////////////////////
+            // Decode GPS data
+            decodeGPS();
 
-			    case NO_GPS:                // No GPS installed
-			        break;
-
-			    ///////////////////////
-
-			    case MEDIATEK_3329_BINARY:  // MediaTek 3329 in binary mode
-			    	decodeMediaTek3329BinaryMsg();
-			    	break;
-
-				///////////////////////
-
-				case MEDIATEK_3329_NMEA:    // MediaTek 3329 in NMEA mode
-				    decodeNMEAsentence();
-	        	    break;
-
-			    ///////////////////////
-
-			    case UBLOX:                 // UBLOX in binary mode
-			    	decodeUbloxMsg();
-			    	break;
-
-			    ///////////////////////
-			}
-
+        	// Update battery monitor
             batMonTick();
 
+            // Check/process CLI port messages
             cliCom();
 
+            // Send high frequency MAVLink messages
             if (eepromConfig.mavlinkEnabled == true)
             {
 				mavlinkSendAttitude();
 				mavlinkSendVfrHud();
-				mavlinkSendESBData();
 			}
 
+            // Calculate execution tick process time
             executionTime10Hz = micros() - currentTime;
 
             #ifdef _DTIMING
@@ -256,52 +237,54 @@ int main(void)
         }
 
         ///////////////////////////////
+        //	500 Hz Execution Tick
+        ///////////////////////////////
 
         if (frame_500Hz)
         {
             #ifdef _DTIMING
                 LA1_ENABLE;
             #endif
-
             frame_500Hz = false;
 
+            // Update delta time for real-time calculations
             currentTime       = micros();
             deltaTime500Hz    = currentTime - previous500HzTime;
             previous500HzTime = currentTime;
 
+            // For integrations in 500 Hz loop
             TIM_Cmd(TIM10, DISABLE);
             timerValue = TIM_GetCounter(TIM10);
             TIM_SetCounter(TIM10, 0);
             TIM_Cmd(TIM10, ENABLE);
+            dt500Hz = (float)timerValue * 0.0000005f;
 
-            dt500Hz = (float)timerValue * 0.0000005f;  // For integrations in 500 Hz loop
-
+            // Compute accel/gyro temperature compensation bias
             computeMPU6000TCBias();
 
+            // Apply accelerometer bias to raw accelerometer data
        	    nonRotatedAccelData[XAXIS] = ((float)accelSummedSamples500Hz[XAXIS] * 0.5f - accelTCBias[XAXIS]) * ACCEL_SCALE_FACTOR;
        	    nonRotatedAccelData[YAXIS] = ((float)accelSummedSamples500Hz[YAXIS] * 0.5f - accelTCBias[YAXIS]) * ACCEL_SCALE_FACTOR;
        	    nonRotatedAccelData[ZAXIS] = ((float)accelSummedSamples500Hz[ZAXIS] * 0.5f - accelTCBias[ZAXIS]) * ACCEL_SCALE_FACTOR;
 
+       	    // Orient raw accelerometer data based on device orientation
 		    arm_mat_init_f32(&a, 3, 3, (float *)mpuOrientationMatrix);
-
 		    arm_mat_init_f32(&b, 3, 1, (float *)nonRotatedAccelData);
-
 		    arm_mat_init_f32(&x, 3, 1,          sensors.accel500Hz);
-
 		    arm_mat_mult_f32(&a, &b, &x);
 
+		    // Apply gyro bias to raw gyro data
             nonRotatedGyroData[ROLL ] = ((float)gyroSummedSamples500Hz[ROLL]  * 0.5f - gyroRTBias[ROLL ] - gyroTCBias[ROLL ]) * GYRO_SCALE_FACTOR;
             nonRotatedGyroData[PITCH] = ((float)gyroSummedSamples500Hz[PITCH] * 0.5f - gyroRTBias[PITCH] - gyroTCBias[PITCH]) * GYRO_SCALE_FACTOR;
             nonRotatedGyroData[YAW  ] = ((float)gyroSummedSamples500Hz[YAW]   * 0.5f - gyroRTBias[YAW  ] - gyroTCBias[YAW  ]) * GYRO_SCALE_FACTOR;
 
+            // Orient raw gyro data based on device orientation
 		    arm_mat_init_f32(&a, 3, 3, (float *)mpuOrientationMatrix);
-
 		    arm_mat_init_f32(&b, 3, 1, (float *)nonRotatedGyroData);
-
 		    arm_mat_init_f32(&x, 3, 1,          sensors.gyro500Hz);
-
 		    arm_mat_mult_f32(&a, &b, &x);
 
+		    // Calculate attitude
             MargAHRSupdate(sensors.gyro500Hz[ROLL],   sensors.gyro500Hz[PITCH],  sensors.gyro500Hz[YAW],
                            sensors.accel500Hz[XAXIS], sensors.accel500Hz[YAXIS], sensors.accel500Hz[ZAXIS],
                            sensors.mag10Hz[XAXIS],    sensors.mag10Hz[YAXIS],    sensors.mag10Hz[ZAXIS],
@@ -309,13 +292,16 @@ int main(void)
                            magDataUpdate,
                            dt500Hz);
 
+            // Schedule a new magnetometer update
             magDataUpdate = false;
 
+            // Calculate and update motor/servo outputs
             computeAxisCommands(dt500Hz);
             mixTable();
             writeServos();
             writeMotors();
 
+            // Calculate execution tick process time
             executionTime500Hz = micros() - currentTime;
 
             #ifdef _DTIMING
@@ -324,103 +310,47 @@ int main(void)
         }
 
         ///////////////////////////////
+        //	100 Hz Execution Tick
+        ///////////////////////////////
 
         if (frame_100Hz)
         {
             #ifdef _DTIMING
                 LA3_ENABLE;
             #endif
-
             frame_100Hz = false;
 
+            // Update delta time for real-time calculations
             currentTime       = micros();
             deltaTime100Hz    = currentTime - previous100HzTime;
             previous100HzTime = currentTime;
 
+            // For integrations in 100 Hz loop
             TIM_Cmd(TIM11, DISABLE);
             timerValue = TIM_GetCounter(TIM11);
             TIM_SetCounter(TIM11, 0);
             TIM_Cmd(TIM11, ENABLE);
+            dt100Hz = (float)timerValue * 0.0000005f;
 
-            dt100Hz = (float)timerValue * 0.0000005f;  // For integrations in 100 Hz loop
-
+            // Apply accelerometer bias to raw accelerometer data
        	    nonRotatedAccelData[XAXIS] = ((float)accelSummedSamples100Hz[XAXIS] * 0.1f - accelTCBias[XAXIS]) * ACCEL_SCALE_FACTOR;
        	    nonRotatedAccelData[YAXIS] = ((float)accelSummedSamples100Hz[YAXIS] * 0.1f - accelTCBias[YAXIS]) * ACCEL_SCALE_FACTOR;
        	    nonRotatedAccelData[ZAXIS] = ((float)accelSummedSamples100Hz[ZAXIS] * 0.1f - accelTCBias[ZAXIS]) * ACCEL_SCALE_FACTOR;
 
+       	    // Orient raw accel data based on device orientation
 		    arm_mat_init_f32(&a, 3, 3, (float *)mpuOrientationMatrix);
-
 		    arm_mat_init_f32(&b, 3, 1, (float *)nonRotatedAccelData);
-
 		    arm_mat_init_f32(&x, 3, 1,          sensors.accel100Hz);
-
 		    arm_mat_mult_f32(&a, &b, &x);
 
+		    // Calculate acceleration data relative to earth rather than sensor axis
             createRotationMatrix();
             bodyAccelToEarthAccel();
+
+            // Update altitude estimation filter (compares altimeter with integrated vertical acceleration)
             vertCompFilter(dt100Hz);
 
-            if (armed == true)
-            {
-				if ( eepromConfig.activeTelemetry == 1 )
-                {
-            	    // Roll Loop
-					openLogPortPrintF("1,%1d,%9.4f,%9.4f,%9.4f,%9.4f,%9.4f,%9.4f\n", flightMode,
-					        			                                             rateCmd[ROLL],
-					        			                                             sensors.gyro500Hz[ROLL],
-					        			                                             ratePID[ROLL],
-                                                                                     attCmd[ROLL],
-		                                                                             sensors.attitude500Hz[ROLL],
-		                                                                             attPID[ROLL]);
-                }
-
-                if ( eepromConfig.activeTelemetry == 2 )
-                {
-            	    // Pitch Loop
-					openLogPortPrintF("2,%1d,%9.4f,%9.4f,%9.4f,%9.4f,%9.4f,%9.4f\n", flightMode,
-					        			                                             rateCmd[PITCH],
-					        			                                             sensors.gyro500Hz[PITCH],
-					        			                                             ratePID[PITCH],
-                                                                                     attCmd[PITCH],
-	                                                                                 sensors.attitude500Hz[PITCH],
-	                                                                                 attPID[PITCH]);
-                }
-
-                if ( eepromConfig.activeTelemetry == 4 )
-                {
-            	    // Sensors
-					openLogPortPrintF("3,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,\n", sensors.accel500Hz[XAXIS],
-					        			                                                                              sensors.accel500Hz[YAXIS],
-					        			                                                                              sensors.accel500Hz[ZAXIS],
-					        			                                                                              sensors.gyro500Hz[ROLL],
-                                                                                                                      sensors.gyro500Hz[PITCH],
-	                                                                                                                  sensors.gyro500Hz[YAW],
-	                                                                                                                  sensors.mag10Hz[XAXIS],
-	                                                                                                                  sensors.mag10Hz[YAXIS],
-	                                                                                                                  sensors.mag10Hz[ZAXIS],
-	                                                                                                                  sensors.attitude500Hz[ROLL],
-	                                                                                                                  sensors.attitude500Hz[PITCH],
-	                                                                                                                  sensors.attitude500Hz[YAW]);
-
-                }
-
-                if ( eepromConfig.activeTelemetry == 8 )
-                {
-
-                }
-
-                if ( eepromConfig.activeTelemetry == 16)
-                {
-               	    // Vertical Variables
-            	    openLogPortPrintF("%9.4f, %9.4f, %9.4f, %4ld, %1d, %9.4f\n", verticalVelocityCmd,
-            	    		                                                     hDotEstimate,
-            	    		                                                     hEstimate,
-            	    		                                                     ms5611Temperature,
-            	    		                                                     verticalModeState,
-            	    		                                                     throttleCmd);
-                }
-		    }
-
+            // Calculate execution tick process time
             executionTime100Hz = micros() - currentTime;
 
             #ifdef _DTIMING
@@ -429,78 +359,91 @@ int main(void)
         }
 
         ///////////////////////////////
+        //	5 Hz Execution Tick
+        ///////////////////////////////
 
         if (frame_5Hz)
         {
             frame_5Hz = false;
 
+            // Update delta time for real-time calculations
             currentTime     = micros();
             deltaTime5Hz    = currentTime - previous5HzTime;
             previous5HzTime = currentTime;
 
-            //if (eepromConfig.mavlinkEnabled == true)
-            //{
-			//	mavlinkSendGpsRaw();
-			//}
+            // Send medium frequency MAVLink messages
+            if (eepromConfig.mavlinkEnabled == true)
+            {
+				mavlinkSendGpsRaw();
+			}
 
+            // Update battery monitor
 			if (batMonVeryLowWarning > 0)
 			{
 				LED1_TOGGLE;
 				batMonVeryLowWarning--;
 			}
 
+			// Toggle blue board LED (Main loop running)
             if (execUp == true)
                 BLUE_LED_TOGGLE;
 
+            // Calculate execution tick process time
 			executionTime5Hz = micros() - currentTime;
         }
 
+        ///////////////////////////////
+        //	1 Hz Execution Tick
         ///////////////////////////////
 
         if (frame_1Hz)
         {
             frame_1Hz = false;
 
+            // Update delta time for real-time calculations
             currentTime     = micros();
             deltaTime1Hz    = currentTime - previous1HzTime;
             previous1HzTime = currentTime;
 
-            if (execUp == true)
-                GREEN_LED_TOGGLE;
-
+            // Toggle green board LED (Main loop running)
             if (execUp == false)
                 execUpCount++;
+            else
+                GREEN_LED_TOGGLE;
 
+            // Counter to allow main loop to run for a while before starting up motors
             if ((execUpCount == 5) && (execUp == false))
             {
 				execUp = true;
-
                 pwmEscInit();
-
                 homeData.magHeading = sensors.attitude500Hz[YAW];
 			}
 
+            // Update battery monitor
             if (batMonLowWarning > 0)
 			{
 				LED1_TOGGLE;
 				batMonLowWarning--;
 			}
 
+            // Send low frequency MAVLink messages
             if (eepromConfig.mavlinkEnabled == true)
             {
 				mavlinkSendHeartbeat();
 				mavlinkSendSysStatus();
+				mavlinkSendESBData();
 			}
 
+            // Update environmental sensors
             updateESB();
 
+            // TODO Remove this
+            cameraTestEcho();
+
+            // Calculate execution tick process time
             executionTime1Hz = micros() - currentTime;
         }
-
-        ////////////////////////////////
     }
-
-    ///////////////////////////////////////////////////////////////////////////
 }
 
 ///////////////////////////////////////////////////////////////////////////////
