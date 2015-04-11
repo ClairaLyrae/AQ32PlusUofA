@@ -11,17 +11,17 @@ extern "C" {
 
 #ifndef MAVLINK_TEST_ALL
 #define MAVLINK_TEST_ALL
-
+static void mavlink_test_common(uint8_t, uint8_t, mavlink_message_t *last_msg);
 static void mavlink_test_firebird(uint8_t, uint8_t, mavlink_message_t *last_msg);
 
 static void mavlink_test_all(uint8_t system_id, uint8_t component_id, mavlink_message_t *last_msg)
 {
-
+	mavlink_test_common(system_id, component_id, last_msg);
 	mavlink_test_firebird(system_id, component_id, last_msg);
 }
 #endif
 
-
+#include "../common/testsuite.h"
 
 
 static void mavlink_test_camera_control(uint8_t system_id, uint8_t component_id, mavlink_message_t *last_msg)
@@ -73,12 +73,13 @@ static void mavlink_test_esb_data(uint8_t system_id, uint8_t component_id, mavli
         uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
         uint16_t i;
 	mavlink_esb_data_t packet_in = {
-		{ 17235, 17236, 17237, 17238, 17239, 17240, 17241 }
+		17235,17339
     };
 	mavlink_esb_data_t packet1, packet2;
         memset(&packet1, 0, sizeof(packet1));
+        	packet1.Ambient_Temperature_Celcius = packet_in.Ambient_Temperature_Celcius;
+        	packet1.Object_Temperature_Celcius = packet_in.Object_Temperature_Celcius;
         
-        	mav_array_memcpy(packet1.ESB_Data, packet_in.ESB_Data, sizeof(uint16_t)*7);
         
 
         memset(&packet2, 0, sizeof(packet2));
@@ -87,12 +88,12 @@ static void mavlink_test_esb_data(uint8_t system_id, uint8_t component_id, mavli
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
         memset(&packet2, 0, sizeof(packet2));
-	mavlink_msg_esb_data_pack(system_id, component_id, &msg , packet1.ESB_Data );
+	mavlink_msg_esb_data_pack(system_id, component_id, &msg , packet1.Ambient_Temperature_Celcius , packet1.Object_Temperature_Celcius );
 	mavlink_msg_esb_data_decode(&msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
         memset(&packet2, 0, sizeof(packet2));
-	mavlink_msg_esb_data_pack_chan(system_id, component_id, MAVLINK_COMM_0, &msg , packet1.ESB_Data );
+	mavlink_msg_esb_data_pack_chan(system_id, component_id, MAVLINK_COMM_0, &msg , packet1.Ambient_Temperature_Celcius , packet1.Object_Temperature_Celcius );
 	mavlink_msg_esb_data_decode(&msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
@@ -105,7 +106,7 @@ static void mavlink_test_esb_data(uint8_t system_id, uint8_t component_id, mavli
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
         
         memset(&packet2, 0, sizeof(packet2));
-	mavlink_msg_esb_data_send(MAVLINK_COMM_1 , packet1.ESB_Data );
+	mavlink_msg_esb_data_send(MAVLINK_COMM_1 , packet1.Ambient_Temperature_Celcius , packet1.Object_Temperature_Celcius );
 	mavlink_msg_esb_data_decode(last_msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 }

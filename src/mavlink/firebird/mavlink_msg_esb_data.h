@@ -4,21 +4,23 @@
 
 typedef struct __mavlink_esb_data_t
 {
- uint16_t ESB_Data[7]; ///< This array will contain the data of the Environmental Sensor Bus. X to be replaced with the number of sensors attached to the current system. Each sensor will be assigned an ID starting with 0. Sensor data can be accessed by accessing the array. ESB_Data[X][0] will contain the sensor ID and ESB_DATA[X][1] Will contain the sensor value 
+ uint16_t Ambient_Temperature_Celcius; ///< Ambient temperature on/around UAV in celcius
+ uint16_t Object_Temperature_Celcius; ///< Object temperature
 } mavlink_esb_data_t;
 
-#define MAVLINK_MSG_ID_ESB_DATA_LEN 14
-#define MAVLINK_MSG_ID_151_LEN 14
+#define MAVLINK_MSG_ID_ESB_DATA_LEN 4
+#define MAVLINK_MSG_ID_151_LEN 4
 
-#define MAVLINK_MSG_ID_ESB_DATA_CRC 198
-#define MAVLINK_MSG_ID_151_CRC 198
+#define MAVLINK_MSG_ID_ESB_DATA_CRC 51
+#define MAVLINK_MSG_ID_151_CRC 51
 
-#define MAVLINK_MSG_ESB_DATA_FIELD_ESB_DATA_LEN 7
+
 
 #define MAVLINK_MESSAGE_INFO_ESB_DATA { \
 	"ESB_DATA", \
-	1, \
-	{  { "ESB_Data", NULL, MAVLINK_TYPE_UINT16_T, 7, 0, offsetof(mavlink_esb_data_t, ESB_Data) }, \
+	2, \
+	{  { "Ambient_Temperature_Celcius", NULL, MAVLINK_TYPE_UINT16_T, 0, 0, offsetof(mavlink_esb_data_t, Ambient_Temperature_Celcius) }, \
+         { "Object_Temperature_Celcius", NULL, MAVLINK_TYPE_UINT16_T, 0, 2, offsetof(mavlink_esb_data_t, Object_Temperature_Celcius) }, \
          } \
 }
 
@@ -29,21 +31,24 @@ typedef struct __mavlink_esb_data_t
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param msg The MAVLink message to compress the data into
  *
- * @param ESB_Data This array will contain the data of the Environmental Sensor Bus. X to be replaced with the number of sensors attached to the current system. Each sensor will be assigned an ID starting with 0. Sensor data can be accessed by accessing the array. ESB_Data[X][0] will contain the sensor ID and ESB_DATA[X][1] Will contain the sensor value 
+ * @param Ambient_Temperature_Celcius Ambient temperature on/around UAV in celcius
+ * @param Object_Temperature_Celcius Object temperature
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_esb_data_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
-						       const uint16_t *ESB_Data)
+						       uint16_t Ambient_Temperature_Celcius, uint16_t Object_Temperature_Celcius)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
 	char buf[MAVLINK_MSG_ID_ESB_DATA_LEN];
+	_mav_put_uint16_t(buf, 0, Ambient_Temperature_Celcius);
+	_mav_put_uint16_t(buf, 2, Object_Temperature_Celcius);
 
-	_mav_put_uint16_t_array(buf, 0, ESB_Data, 7);
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ESB_DATA_LEN);
 #else
 	mavlink_esb_data_t packet;
+	packet.Ambient_Temperature_Celcius = Ambient_Temperature_Celcius;
+	packet.Object_Temperature_Celcius = Object_Temperature_Celcius;
 
-	mav_array_memcpy(packet.ESB_Data, ESB_Data, sizeof(uint16_t)*7);
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ESB_DATA_LEN);
 #endif
 
@@ -61,22 +66,25 @@ static inline uint16_t mavlink_msg_esb_data_pack(uint8_t system_id, uint8_t comp
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param chan The MAVLink channel this message will be sent over
  * @param msg The MAVLink message to compress the data into
- * @param ESB_Data This array will contain the data of the Environmental Sensor Bus. X to be replaced with the number of sensors attached to the current system. Each sensor will be assigned an ID starting with 0. Sensor data can be accessed by accessing the array. ESB_Data[X][0] will contain the sensor ID and ESB_DATA[X][1] Will contain the sensor value 
+ * @param Ambient_Temperature_Celcius Ambient temperature on/around UAV in celcius
+ * @param Object_Temperature_Celcius Object temperature
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_esb_data_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
 							   mavlink_message_t* msg,
-						           const uint16_t *ESB_Data)
+						           uint16_t Ambient_Temperature_Celcius,uint16_t Object_Temperature_Celcius)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
 	char buf[MAVLINK_MSG_ID_ESB_DATA_LEN];
+	_mav_put_uint16_t(buf, 0, Ambient_Temperature_Celcius);
+	_mav_put_uint16_t(buf, 2, Object_Temperature_Celcius);
 
-	_mav_put_uint16_t_array(buf, 0, ESB_Data, 7);
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ESB_DATA_LEN);
 #else
 	mavlink_esb_data_t packet;
+	packet.Ambient_Temperature_Celcius = Ambient_Temperature_Celcius;
+	packet.Object_Temperature_Celcius = Object_Temperature_Celcius;
 
-	mav_array_memcpy(packet.ESB_Data, ESB_Data, sizeof(uint16_t)*7);
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ESB_DATA_LEN);
 #endif
 
@@ -98,7 +106,7 @@ static inline uint16_t mavlink_msg_esb_data_pack_chan(uint8_t system_id, uint8_t
  */
 static inline uint16_t mavlink_msg_esb_data_encode(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg, const mavlink_esb_data_t* esb_data)
 {
-	return mavlink_msg_esb_data_pack(system_id, component_id, msg, esb_data->ESB_Data);
+	return mavlink_msg_esb_data_pack(system_id, component_id, msg, esb_data->Ambient_Temperature_Celcius, esb_data->Object_Temperature_Celcius);
 }
 
 /**
@@ -112,23 +120,25 @@ static inline uint16_t mavlink_msg_esb_data_encode(uint8_t system_id, uint8_t co
  */
 static inline uint16_t mavlink_msg_esb_data_encode_chan(uint8_t system_id, uint8_t component_id, uint8_t chan, mavlink_message_t* msg, const mavlink_esb_data_t* esb_data)
 {
-	return mavlink_msg_esb_data_pack_chan(system_id, component_id, chan, msg, esb_data->ESB_Data);
+	return mavlink_msg_esb_data_pack_chan(system_id, component_id, chan, msg, esb_data->Ambient_Temperature_Celcius, esb_data->Object_Temperature_Celcius);
 }
 
 /**
  * @brief Send a esb_data message
  * @param chan MAVLink channel to send the message
  *
- * @param ESB_Data This array will contain the data of the Environmental Sensor Bus. X to be replaced with the number of sensors attached to the current system. Each sensor will be assigned an ID starting with 0. Sensor data can be accessed by accessing the array. ESB_Data[X][0] will contain the sensor ID and ESB_DATA[X][1] Will contain the sensor value 
+ * @param Ambient_Temperature_Celcius Ambient temperature on/around UAV in celcius
+ * @param Object_Temperature_Celcius Object temperature
  */
 #ifdef MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
-static inline void mavlink_msg_esb_data_send(mavlink_channel_t chan, const uint16_t *ESB_Data)
+static inline void mavlink_msg_esb_data_send(mavlink_channel_t chan, uint16_t Ambient_Temperature_Celcius, uint16_t Object_Temperature_Celcius)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
 	char buf[MAVLINK_MSG_ID_ESB_DATA_LEN];
+	_mav_put_uint16_t(buf, 0, Ambient_Temperature_Celcius);
+	_mav_put_uint16_t(buf, 2, Object_Temperature_Celcius);
 
-	_mav_put_uint16_t_array(buf, 0, ESB_Data, 7);
 #if MAVLINK_CRC_EXTRA
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ESB_DATA, buf, MAVLINK_MSG_ID_ESB_DATA_LEN, MAVLINK_MSG_ID_ESB_DATA_CRC);
 #else
@@ -136,8 +146,9 @@ static inline void mavlink_msg_esb_data_send(mavlink_channel_t chan, const uint1
 #endif
 #else
 	mavlink_esb_data_t packet;
+	packet.Ambient_Temperature_Celcius = Ambient_Temperature_Celcius;
+	packet.Object_Temperature_Celcius = Object_Temperature_Celcius;
 
-	mav_array_memcpy(packet.ESB_Data, ESB_Data, sizeof(uint16_t)*7);
 #if MAVLINK_CRC_EXTRA
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ESB_DATA, (const char *)&packet, MAVLINK_MSG_ID_ESB_DATA_LEN, MAVLINK_MSG_ID_ESB_DATA_CRC);
 #else
@@ -154,12 +165,13 @@ static inline void mavlink_msg_esb_data_send(mavlink_channel_t chan, const uint1
   is usually the receive buffer for the channel, and allows a reply to an
   incoming message with minimum stack space usage.
  */
-static inline void mavlink_msg_esb_data_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  const uint16_t *ESB_Data)
+static inline void mavlink_msg_esb_data_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  uint16_t Ambient_Temperature_Celcius, uint16_t Object_Temperature_Celcius)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
 	char *buf = (char *)msgbuf;
+	_mav_put_uint16_t(buf, 0, Ambient_Temperature_Celcius);
+	_mav_put_uint16_t(buf, 2, Object_Temperature_Celcius);
 
-	_mav_put_uint16_t_array(buf, 0, ESB_Data, 7);
 #if MAVLINK_CRC_EXTRA
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ESB_DATA, buf, MAVLINK_MSG_ID_ESB_DATA_LEN, MAVLINK_MSG_ID_ESB_DATA_CRC);
 #else
@@ -167,8 +179,9 @@ static inline void mavlink_msg_esb_data_send_buf(mavlink_message_t *msgbuf, mavl
 #endif
 #else
 	mavlink_esb_data_t *packet = (mavlink_esb_data_t *)msgbuf;
+	packet->Ambient_Temperature_Celcius = Ambient_Temperature_Celcius;
+	packet->Object_Temperature_Celcius = Object_Temperature_Celcius;
 
-	mav_array_memcpy(packet->ESB_Data, ESB_Data, sizeof(uint16_t)*7);
 #if MAVLINK_CRC_EXTRA
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ESB_DATA, (const char *)packet, MAVLINK_MSG_ID_ESB_DATA_LEN, MAVLINK_MSG_ID_ESB_DATA_CRC);
 #else
@@ -184,13 +197,23 @@ static inline void mavlink_msg_esb_data_send_buf(mavlink_message_t *msgbuf, mavl
 
 
 /**
- * @brief Get field ESB_Data from esb_data message
+ * @brief Get field Ambient_Temperature_Celcius from esb_data message
  *
- * @return This array will contain the data of the Environmental Sensor Bus. X to be replaced with the number of sensors attached to the current system. Each sensor will be assigned an ID starting with 0. Sensor data can be accessed by accessing the array. ESB_Data[X][0] will contain the sensor ID and ESB_DATA[X][1] Will contain the sensor value 
+ * @return Ambient temperature on/around UAV in celcius
  */
-static inline uint16_t mavlink_msg_esb_data_get_ESB_Data(const mavlink_message_t* msg, uint16_t *ESB_Data)
+static inline uint16_t mavlink_msg_esb_data_get_Ambient_Temperature_Celcius(const mavlink_message_t* msg)
 {
-	return _MAV_RETURN_uint16_t_array(msg, ESB_Data, 7,  0);
+	return _MAV_RETURN_uint16_t(msg,  0);
+}
+
+/**
+ * @brief Get field Object_Temperature_Celcius from esb_data message
+ *
+ * @return Object temperature
+ */
+static inline uint16_t mavlink_msg_esb_data_get_Object_Temperature_Celcius(const mavlink_message_t* msg)
+{
+	return _MAV_RETURN_uint16_t(msg,  2);
 }
 
 /**
@@ -202,7 +225,8 @@ static inline uint16_t mavlink_msg_esb_data_get_ESB_Data(const mavlink_message_t
 static inline void mavlink_msg_esb_data_decode(const mavlink_message_t* msg, mavlink_esb_data_t* esb_data)
 {
 #if MAVLINK_NEED_BYTE_SWAP
-	mavlink_msg_esb_data_get_ESB_Data(msg, esb_data->ESB_Data);
+	esb_data->Ambient_Temperature_Celcius = mavlink_msg_esb_data_get_Ambient_Temperature_Celcius(msg);
+	esb_data->Object_Temperature_Celcius = mavlink_msg_esb_data_get_Object_Temperature_Celcius(msg);
 #else
 	memcpy(esb_data, _MAV_PAYLOAD(msg), MAVLINK_MSG_ID_ESB_DATA_LEN);
 #endif
