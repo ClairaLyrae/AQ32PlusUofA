@@ -74,8 +74,6 @@ void initCamera(void)
 	cameraEnable(true);
 }
 
-void
-
 void cameraTestEcho(void)
 {
 	// Testing echo on camera port

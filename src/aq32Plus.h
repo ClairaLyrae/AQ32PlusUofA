@@ -138,8 +138,8 @@ typedef struct gps_t
 {
 	uint32_t  latitude;     // 1e-7 degrees
 	uint32_t  longitude;    // 1e-7 degrees
-	uint32_t   height;       // mm above ellipsoid
-	int32_t  hMSL;         // mm above mean sea level
+	uint32_t   height;       // m above ellipsoid
+	int32_t  hMSL;         // m above mean sea level
 	int32_t  velN;         // cm/s
 	int32_t  velE;         // cm/s
 	int32_t  velD;         // cm/s
@@ -211,7 +211,9 @@ enum { MIXERTYPE_TRI,
 // Flight Modes
 ///////////////////////////////////////////////////////////////////////////////
 
-enum { RATE, ATTITUDE, GPS };
+enum { 	RATE = 0,
+		ATTITUDE = 1,
+		GPS = 2};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Vertical Mode States

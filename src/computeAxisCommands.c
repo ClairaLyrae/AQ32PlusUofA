@@ -77,6 +77,12 @@ void computeAxisCommands(float dt)
         attPID[PITCH] = updatePID(error, dt, pidReset, &eepromConfig.PID[PITCH_ATT_PID]);
     }
 
+
+//    if (flightMode == GPS)//TODO
+//    {
+//
+//    }
+
     // Rate mode is ON
     if (flightMode == RATE)
     {
