@@ -5,6 +5,7 @@
  */
 
 #include <mavlink/common/mavlink.h>
+#include <mavlink/firebird/firebird.h>
 #include <board.h>
 
 // Example variable, by declaring them static they're persistent
@@ -48,14 +49,35 @@ static void communication_receive(void)
 
 			switch(msg.msgid)
 			{
-			//CAMERA CONTROL MESSAGE CASE
-			case MAVLINK_MSG_ID_CAMERA_CONTROL:
-				// EXECUTE ACTION RELATED TO CAMERA CONTROL
-				break;
-			//OSD CONTROL MESSAGE CASE
-			/*case MAVLINK_MSG_ID_OSD_CONTROL:
-				//EXECUTE ACTION RELATED TO OSD CONTROL
-				break;*/
+				//COMMANDS
+				case MAVLINK_MSG_ID_COMMAND_LONG:
+				{
+				mavlink_command_long_t cmd;
+				mavlink_msg_command_long_decode(msg, &cmd);
+				switch (cmd.command) {
+					/*CAMERA CONTROL COMMAND*/
+					case MAV_CMD_CAMERA_CONTROL:
+						/*Enable camera*/
+						if (((int)(cmd.param1)) == 0) {
+							mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_ACCEPTED);
+							cameraEnable(false);
+						}
+						/*Disable camera*/
+						else if (((int)(cmd.param1)) == 1) {
+							mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_ACCEPTED);
+							cameraEnable(true);
+						}
+						else {
+							mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_FAILED);
+
+						}
+					break;
+					default:
+					mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_UNSUPPORTED);
+					break;
+				}
+			}
+					break;
 			default:
 				//Do nothing
 				break;
