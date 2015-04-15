@@ -12,15 +12,6 @@
 // and will thus track the system state
 static int packet_drops = 0;
 
-uint32_t (*cliPortAvailable)(void);
-
-void     (*cliPortClearBuffer)(void);
-
-uint8_t  (*cliPortRead)(void);
-
-void     (*cliPortPrint)(char *str);
-
-void     (*cliPortPrintF)(const char * fmt, ...);
 
 ///////////////////////////////////////
 
@@ -33,7 +24,7 @@ uint8_t cliBusy = false;
 * their value by calling the appropriate functions.
 */
 
-static void communication_receive(void)
+void communication_receive(void)
 {
 	mavlink_message_t msg;
 	mavlink_status_t status;
@@ -53,27 +44,27 @@ static void communication_receive(void)
 				case MAVLINK_MSG_ID_COMMAND_LONG:
 				{
 				mavlink_command_long_t cmd;
-				mavlink_msg_command_long_decode(msg, &cmd);
+				mavlink_msg_command_long_decode(&msg, &cmd);
 				switch (cmd.command) {
 					/*CAMERA CONTROL COMMAND*/
 					case MAV_CMD_CAMERA_CONTROL:
 						/*Enable camera*/
 						if (((int)(cmd.param1)) == 0) {
-							mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_ACCEPTED);
+							//mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_ACCEPTED);
 							cameraEnable(false);
 						}
 						/*Disable camera*/
 						else if (((int)(cmd.param1)) == 1) {
-							mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_ACCEPTED);
+							//mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_ACCEPTED);
 							cameraEnable(true);
 						}
 						else {
-							mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_FAILED);
+							//mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_FAILED);
 
 						}
 					break;
 					default:
-					mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_UNSUPPORTED);
+					//mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_UNSUPPORTED);
 					break;
 				}
 			}
