@@ -434,6 +434,7 @@ int main(void)
 				mavlinkSendHeartbeat();
 				mavlinkSendSysStatus();
 				mavlinkSendESBData();
+				communication_receive();
 			}
 
             // Update environmental sensors
