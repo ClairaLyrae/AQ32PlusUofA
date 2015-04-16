@@ -58,11 +58,44 @@ void communication_receive(void)
 							//mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_ACCEPTED);
 							cameraEnable(true);
 						}
+						if(((int)(cmd.param2)) == 0){
+							cameraFlip(false);
+						}
+						else if(((int)(cmd.param2)) == 1){
+							cameraFlip(true);
+						}/*
+						//digital zoom
+						if(((int)(cmd.param3)) != 0){
+
+						}
+						//optical zoom
+						if(((int)(cmd.param4)) != 0){
+
+						}
+						*/
 						else {
 							//mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_FAILED);
 
 						}
 					break;
+				/*OSD CONTROL COMMAND
+				 ***UNCOMMENT WHEN THIS FUNCTIONALITY IS READY****
+				 * 	case MAV_CMD_OSD_CONTROL:
+				 * 	if ((int)(cmd.param1)) == 0){
+				 * 		//Disable component 1
+				 * 	}
+				 * 	else if((int)(cmd.param1)) == 1){
+				 * 		//Enable component 1
+				 * 	}
+				 * 	if((int)(cmd.param2)) == 0){
+				 * 		//Disable component 2
+				 * 	}
+				 * 	else if((int)(cmd.param2)) == 0{
+				 * 		//Enable component 2
+				 * 	}
+				 * 	//Continue statements for each OSD component we wish to enable or disable
+				 * 	break;
+				 */
 					default:
 					//mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_UNSUPPORTED);
 					break;
