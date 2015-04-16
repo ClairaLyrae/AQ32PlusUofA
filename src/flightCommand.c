@@ -343,7 +343,7 @@ void processFlightCommands(void)
 		///////////////////////////////
 
 		case VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY:
-		    if ((vertRefCmdInDetent == true))
+		    if ((vertRefCmdInDetent == true) && ((rxCommand[AUX2] > MINCOMMAND+500) && (rxCommand[AUX2] < MIDCOMMAND+500)))
 		    {
 				verticalModeState = ALT_HOLD_AT_REFERENCE_ALTITUDE;
 				altitudeHoldReference = hEstimate;
