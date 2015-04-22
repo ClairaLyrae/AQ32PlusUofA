@@ -1,7 +1,13 @@
 /*
  * Modified by: Fabian De La Pena Montero
+ *
  * Original source code obtained from
  * http://qgroundcontrol.org/dev/mavlink_onboard_integration_tutorial
+ *
+ * Filename: mavlink_receive.c
+ *
+ * Description: This file contains a function that receives and handles MAVLink
+ * messages sent to the UAV by the ground station.
  */
 
 #include <mavlink/common/mavlink.h>
@@ -47,37 +53,22 @@ void communication_receive(void)
 				mavlink_msg_command_long_decode(&msg, &cmd);
 				switch (cmd.command) {
 					/*CAMERA CONTROL COMMAND*/
-					case MAV_CMD_CAMERA_CONTROL:
+					case MAV_CMD_VIDEO_START_CAPTURE:
 						/*Enable camera*/
-						if (((int)(cmd.param1)) == 0) {
-							//mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_ACCEPTED);
-							cameraEnable(false);
-						}
-						/*Disable camera*/
-						else if (((int)(cmd.param1)) == 1) {
-							//mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_ACCEPTED);
 							cameraEnable(true);
-						}
-						if(((int)(cmd.param2)) == 0){
-							cameraFlip(false);
-						}
-						else if(((int)(cmd.param2)) == 1){
-							cameraFlip(true);
-						}/*
-						//digital zoom
-						if(((int)(cmd.param3)) != 0){
-
-						}
-						//optical zoom
-						if(((int)(cmd.param4)) != 0){
-
-						}
-						*/
-						else {
-							//mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_FAILED);
-
-						}
 					break;
+					case MAV_CMD_VIDEO_STOP_CAPTURE:
+							cameraEnable(false);
+						break;
+					case MAV_CMD_DO_DIGICAM_CONTROL:
+						if (((int)(cmd.param1)) == 1){
+							cameraFlip(true);
+						}
+						else if (((int)(cmd.param1)) == 2){
+							cameraFlip(false);
+
+						}
+						break;
 				/*OSD CONTROL COMMAND
 				 ***UNCOMMENT WHEN THIS FUNCTIONALITY IS READY****
 				 * 	case MAV_CMD_OSD_CONTROL:
