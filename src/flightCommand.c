@@ -288,18 +288,21 @@ void processFlightCommands(void)
 
     // Vertical Mode State Machine
     // DEFINITION : Detents are used to simply arrest rotation or divide a rotation into discrete increments
-
+    //detent is mid throttle +/- 200
+    //2000->VVH 3000->AltH 4000-> off
+	// TODO Fix vertical velocity hold only mode... keeps switching out to alt hold when throttle at middle position
+	// Alternates between the two-done fixed engage
     switch (verticalModeState)
 	{
 		case ALT_DISENGAGED_THROTTLE_ACTIVE:
 
 		    // Going into vertical velocity hold from off
-		    if ((rxCommand[AUX2] < MINCOMMAND+500) && (previousAUX2State >= MIDCOMMAND+500))
+		    if ((rxCommand[AUX2] < MINCOMMAND+500) && (previousAUX2State >= MIDCOMMAND+500))//<2500 >3500
 		    {
 		        verticalModeState = VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY;
 		    }
 			// Going into altitude mode from off
-		    else if ((rxCommand[AUX2] < MIDCOMMAND+500) && (previousAUX2State >= MIDCOMMAND+500))
+		    else if ((rxCommand[AUX2] < MIDCOMMAND+500) && (previousAUX2State >= MIDCOMMAND+500))//<3500 >3500
 		    {
 				verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
 				setPIDstates(HDOT_PID,        0.0f);
@@ -317,17 +320,17 @@ void processFlightCommands(void)
 		    if ((vertRefCmdInDetent == true))
 		        verticalModeState = ALT_HOLD_AT_REFERENCE_ALTITUDE;
 
-		    // Disengage
+		    // Disengage			off
 		    if ((rxCommand[AUX2] > MIDCOMMAND+500))  // AUX2 Falling edge detection
 		        verticalModeState = ALT_DISENGAGED_THROTTLE_ACTIVE;
 
-		    // Force velocity only
+		    // Force velocity only, VVH
 		    if ((rxCommand[AUX2] < MINCOMMAND+500))  // AUX2 Falling edge detection
 		        verticalModeState = VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY;
 		    break;
 
 		case ALT_HOLD_AT_REFERENCE_ALTITUDE:
-		    if ((vertRefCmdInDetent == false))
+		    if ((vertRefCmdInDetent == false))//not in detent, i.e. changing vertical position
 		        verticalModeState = VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY;
 
 		    // Disengage
@@ -342,23 +345,23 @@ void processFlightCommands(void)
 
 		///////////////////////////////
 
-		case VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY:
-		    if ((vertRefCmdInDetent == true))
+		case VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY: //>2500							//<3500  detent and current altH
+		    if ((vertRefCmdInDetent == true) && (rxCommand[AUX2] < MIDCOMMAND+500) && (rxCommand[AUX2] > MINCOMMAND+500))
 		    {
 				verticalModeState = ALT_HOLD_AT_REFERENCE_ALTITUDE;
 				altitudeHoldReference = hEstimate;
-			}
+			}				//>3500     off and previous altH
 		    else if ((rxCommand[AUX2] > MIDCOMMAND+500) && ((previousAUX2State > MINCOMMAND+500) && (previousAUX2State <= MIDCOMMAND+500)))
 		    {
 				verticalModeState = ALT_DISENGAGED_THROTTLE_ACTIVE;
 				altitudeHoldReference = hEstimate;
 		    }
-
+		    		//off and previous VVH
 		    if ((rxCommand[AUX2] > MIDCOMMAND+500) && (previousAUX2State <= MINCOMMAND+500))  // AUX2 Falling edge detection, aux2 turned off
 		    {
 				verticalModeState = ALT_DISENGAGED_THROTTLE_ACTIVE;
 				altitudeHoldReference = hEstimate;
-			}
+			}		//altH or VVH and previous VVH
 		    else if ((rxCommand[AUX2] > MINCOMMAND+500) && (previousAUX2State <= MINCOMMAND+500))  // AUX2 Falling edge detection, aux2 turned off
 		    {
 				verticalModeState = ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT;
