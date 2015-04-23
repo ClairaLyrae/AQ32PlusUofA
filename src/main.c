@@ -36,6 +36,7 @@
 
 #include "board.h"
 
+
 ///////////////////////////////////////////////////////////////////////////////
 
 __attribute__((__section__(".eeprom"), used)) const int8_t eepromArray[16384];
@@ -434,6 +435,7 @@ int main(void)
 				mavlinkSendHeartbeat();
 				mavlinkSendSysStatus();
 				mavlinkSendESBData();
+				communication_receive();
 			}
 
             // Update environmental sensors

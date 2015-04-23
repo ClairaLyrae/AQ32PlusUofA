@@ -200,9 +200,15 @@ void mavlinkSendVfrHud(void)
 
 ///////////////////////////////////////////////////////////////////////////////
 void mavlinkSendESBData(void){
-
+	//TODO: Add additional sensors that will be connected to the system
 	//Pack ESB data
-	mavlink_msg_esb_data_pack(mavlink_system.sysid,mavlink_system.compid,&msg,mlxAmbTempC,mlxObjTempC);
+	mavlink_msg_esb_data_pack(
+								mavlink_system.sysid,
+								mavlink_system.compid,
+								&msg,
+								mlxAmbTempC,
+								mlxObjTempC
+								);
 
 	// Copy the message to the send buffer
     length = mavlink_msg_to_send_buffer(buffer, &msg);

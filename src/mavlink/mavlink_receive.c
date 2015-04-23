@@ -1,25 +1,23 @@
 /*
  * Modified by: Fabian De La Pena Montero
+ *
  * Original source code obtained from
  * http://qgroundcontrol.org/dev/mavlink_onboard_integration_tutorial
+ *
+ * Filename: mavlink_receive.c
+ *
+ * Description: This file contains a function that receives and handles MAVLink
+ * messages sent to the UAV by the ground station.
  */
 
 #include <mavlink/common/mavlink.h>
+#include <mavlink/firebird/firebird.h>
 #include <board.h>
 
 // Example variable, by declaring them static they're persistent
 // and will thus track the system state
 static int packet_drops = 0;
 
-uint32_t (*cliPortAvailable)(void);
-
-void     (*cliPortClearBuffer)(void);
-
-uint8_t  (*cliPortRead)(void);
-
-void     (*cliPortPrint)(char *str);
-
-void     (*cliPortPrintF)(const char * fmt, ...);
 
 ///////////////////////////////////////
 
@@ -32,7 +30,7 @@ uint8_t cliBusy = false;
 * their value by calling the appropriate functions.
 */
 
-static void communication_receive(void)
+void communication_receive(void)
 {
 	mavlink_message_t msg;
 	mavlink_status_t status;
@@ -48,14 +46,53 @@ static void communication_receive(void)
 
 			switch(msg.msgid)
 			{
-			//CAMERA CONTROL MESSAGE CASE
-			case MAVLINK_MSG_ID_CAMERA_CONTROL:
-				// EXECUTE ACTION RELATED TO CAMERA CONTROL
-				break;
-			//OSD CONTROL MESSAGE CASE
-			/*case MAVLINK_MSG_ID_OSD_CONTROL:
-				//EXECUTE ACTION RELATED TO OSD CONTROL
-				break;*/
+				//COMMANDS
+				case MAVLINK_MSG_ID_COMMAND_LONG:
+				{
+				mavlink_command_long_t cmd;
+				mavlink_msg_command_long_decode(&msg, &cmd);
+				switch (cmd.command) {
+					/*CAMERA CONTROL COMMAND*/
+					case MAV_CMD_VIDEO_START_CAPTURE:
+						/*Enable camera*/
+							cameraEnable(true);
+					break;
+					case MAV_CMD_VIDEO_STOP_CAPTURE:
+							cameraEnable(false);
+						break;
+					case MAV_CMD_DO_DIGICAM_CONTROL:
+						if (((int)(cmd.param1)) == 1){
+							cameraFlip(true);
+						}
+						else if (((int)(cmd.param1)) == 2){
+							cameraFlip(false);
+
+						}
+						break;
+				/*OSD CONTROL COMMAND
+				 ***UNCOMMENT WHEN THIS FUNCTIONALITY IS READY****
+				 * 	case MAV_CMD_OSD_CONTROL:
+				 * 	if ((int)(cmd.param1)) == 0){
+				 * 		//Disable component 1
+				 * 	}
+				 * 	else if((int)(cmd.param1)) == 1){
+				 * 		//Enable component 1
+				 * 	}
+				 * 	if((int)(cmd.param2)) == 0){
+				 * 		//Disable component 2
+				 * 	}
+				 * 	else if((int)(cmd.param2)) == 0{
+				 * 		//Enable component 2
+				 * 	}
+				 * 	//Continue statements for each OSD component we wish to enable or disable
+				 * 	break;
+				 */
+					default:
+					//mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, MAV_RESULT_UNSUPPORTED);
+					break;
+				}
+			}
+					break;
 			default:
 				//Do nothing
 				break;

@@ -126,5 +126,7 @@
 #include "utilities.h"
 #include "vertCompFilter.h"
 #include "watchdogs.h"
+#include "mavlink_receive.h"
+#include "firebird.h"
 
 ///////////////////////////////////////////////////////////////////////////////
