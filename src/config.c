@@ -369,7 +369,7 @@ void checkFirstTime(bool eepromReset)
         eepromConfig.PID[EDOT_PID].filterState           =    0.0f;
         eepromConfig.PID[EDOT_PID].prevResetState        =   false;
 
-        eepromConfig.PID[HDOT_PID].P                     =    2.0f;
+        eepromConfig.PID[HDOT_PID].P                     =    450.0f;
         eepromConfig.PID[HDOT_PID].I                     =    0.0f;
         eepromConfig.PID[HDOT_PID].D                     =    0.0f;
         eepromConfig.PID[HDOT_PID].Limit                 = 1000.0f * eepromConfig.hDotScaling * eepromConfig.PID[HDOT_PID].P;
