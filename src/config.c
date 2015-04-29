@@ -237,7 +237,7 @@ void checkFirstTime(bool eepromReset)
 	    eepromConfig.escPwmRate   = 450;
         eepromConfig.servoPwmRate = 50;
 
-        eepromConfig.mixerConfiguration = MIXERTYPE_TRI;
+        eepromConfig.mixerConfiguration = MIXERTYPE_QUADX;
         eepromConfig.yawDirection       = 1.0f;
 
         eepromConfig.triYawServoPwmRate             = 50;
