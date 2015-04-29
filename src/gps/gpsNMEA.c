@@ -180,10 +180,10 @@ void nmeaProcessSentence()
 
         p += 6;  // Skip over 'GPGGA,'
         gps.iTOW       = (nmeaGetScaledInt(&p, &work, 3)) ? (uint32_t)work : GPS_INVALID_TIME;
-        gps.latitude    = (nmeaGetScaledInt(&p,   &work, 4)) ? (uint32_t)work : GPS_INVALID_ANGLE;
-        p += 2;  // Skip
-        gps.longitude  = (nmeaGetScaledInt(&p,   &work, 4)) ? (uint32_t)work : GPS_INVALID_ANGLE;
-        p += 2;  // Skip
+        gps.latitude    = (nmeaGetLatLong(&p,   &work, 4)) ? (uint32_t)work : GPS_INVALID_ANGLE;
+        //p += 2;  // Skip
+        gps.longitude  = (nmeaGetLatLong(&p,   &work, 4)) ? (uint32_t)work : GPS_INVALID_ANGLE;
+        //p += 2;  // Skip
         gps.fix = (nmeaGetScaledInt(&p, &work,  0)) ? (uint8_t)work : FIX_NONE; // Position Fix Indicator - Not Used
         gps.numSats     = (nmeaGetScaledInt(&p, &work, 0)) ? (uint8_t)work : GPS_INVALID_SATS;
         gps.hDop       = (nmeaGetScaledInt(&p, &work, 2)) ? (uint16_t)work : GPS_INVALID_HDOP;

@@ -237,7 +237,7 @@ void checkFirstTime(bool eepromReset)
 	    eepromConfig.escPwmRate   = 450;
         eepromConfig.servoPwmRate = 50;
 
-        eepromConfig.mixerConfiguration = MIXERTYPE_TRI;
+        eepromConfig.mixerConfiguration = MIXERTYPE_QUADX;
         eepromConfig.yawDirection       = 1.0f;
 
         eepromConfig.triYawServoPwmRate             = 50;
@@ -369,7 +369,7 @@ void checkFirstTime(bool eepromReset)
         eepromConfig.PID[EDOT_PID].filterState           =    0.0f;
         eepromConfig.PID[EDOT_PID].prevResetState        =   false;
 
-        eepromConfig.PID[HDOT_PID].P                     =    2.0f;
+        eepromConfig.PID[HDOT_PID].P                     =    450.0f;
         eepromConfig.PID[HDOT_PID].I                     =    0.0f;
         eepromConfig.PID[HDOT_PID].D                     =    0.0f;
         eepromConfig.PID[HDOT_PID].Limit                 = 1000.0f * eepromConfig.hDotScaling * eepromConfig.PID[HDOT_PID].P;
