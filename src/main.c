@@ -376,6 +376,7 @@ int main(void)
             if (eepromConfig.mavlinkEnabled == true)
             {
 				mavlinkSendGpsRaw();
+
 			}
 
             // Update battery monitor
@@ -436,6 +437,7 @@ int main(void)
 				mavlinkSendSysStatus();
 				mavlinkSendESBData();
 				communication_receive();
+
 			}
 
             // Update environmental sensors

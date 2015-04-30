@@ -11,6 +11,13 @@ extern uint8_t  (*cameraPortRead)(void);
 extern void     (*cameraPortPrint)(char *str);
 extern void     (*cameraPortPrintF)(const char * fmt, ...);
 extern void     (*cameraPortWrite)(uint8_t data);
+extern int cameraZoom;
+int firstHex = 0x81;
+int secondHex = 0x01;
+int thirdHex = 0x04;
+int fourthHex = 0x00;
+int fifthHex = 0x02;
+int sixthHex = 0xFF;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Camera Defines
@@ -75,11 +82,14 @@ enum {
 ///////////////////////////////////////////////////////////////////////////////
 
 void cameraEnable(uint8_t state);
-
+void cameraEnablesOSD(uint8_t state);
+void updateOSD();
 void cameraSetOrientation(uint8_t mode);
 
 void cameraSetZoom(uint8_t optical, uint8_t digital);
-
+void cameraZoomIn();
+void cameraZoomOut();
+void cameraStopZoom();
 void cameraSetFocusMode(uint8_t mode);
 
 void cameraSetAF(uint8_t sensitivity, uint8_t mode);

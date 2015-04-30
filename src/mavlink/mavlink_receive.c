@@ -68,6 +68,21 @@ void communication_receive(void)
 							cameraFlip(false);
 
 						}
+						else if (((int)(cmd.param3)) == 1){
+							cameraZoomIn();
+						}
+						else if (((int)(cmd.param3)) == -1){
+							cameraZoomOut();
+						}
+						else if (((int)(cmd.param3)) == 2){
+							cameraStopZoom();
+						}
+						else if (((int)(cmd.param7)) == 1){
+							cameraEnableOSD(true);
+						}
+						else if (((int)(cmd.param7)) == -1){
+							cameraEnableOSD(false);
+						}
 						break;
 				/*OSD CONTROL COMMAND
 				 ***UNCOMMENT WHEN THIS FUNCTIONALITY IS READY****
