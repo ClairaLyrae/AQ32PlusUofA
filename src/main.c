@@ -168,7 +168,7 @@ int main(void)
             	rssiMeasure();
 
             // Update MAX7456 On-Screen Display IC (Not used)
-            //updateMax7456(currentTime, 0);
+            updateMax7456(currentTime, 0);
 
             // Calculate execution tick process time
             executionTime50Hz = micros() - currentTime;
