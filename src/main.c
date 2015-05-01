@@ -376,6 +376,7 @@ int main(void)
             if (eepromConfig.mavlinkEnabled == true)
             {
 				mavlinkSendGpsRaw();
+				mavlinkSendGpsPosition();
 
 			}
 

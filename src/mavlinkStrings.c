@@ -121,6 +121,23 @@ void mavlinkSendGpsRaw(void)
 
 	mavlinkPortPrintBinary(buffer, length);
 }
+void mavlinkSendGpsPosition(void){
+	mavlink_msg_global_position_int_pack(	mavlink_system.sysid,
+											mavlink_system.compid,
+											&msg,
+											(uint64_t)micros(),
+											gps.latitude*10,
+											gps.longitude*10,
+											gps.hMSL,
+											0,
+											0,
+											0,
+											0,
+											0);
+	length = mavlink_msg_to_send_buffer(buffer, &msg);
+
+	mavlinkPortPrintBinary(buffer, length);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
