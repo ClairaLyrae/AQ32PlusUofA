@@ -47,7 +47,7 @@ void cameraEnableOSD(uint8_t state){
 		cameraPortPrint("\x81\x01\x04\x74\x3F\xFF");
 }
 void updateOSD(){
-	cameraPortPrint("\x81\x01\x04\x74\x1F\xFF");
+	cameraPortPrint("\x81\x01\x04\x74\x10\xFF");
 	cameraPortPrint("\x81\x01\x04\x73\x10");
 	cameraPortWrite(zero_byte);
 	cameraPortWrite(zero_byte);
@@ -63,7 +63,7 @@ void updateOSD(){
 	cameraPortPrint("\x81\x01\x04\x73\x20\x01");
 	cameraPortWrite(zero_byte);
 	cameraPortPrint("\x13\x13\x4A\x1B");
-	valueToVisca((float)batteryVoltage,4);
+	valueToVisca(batteryVoltage,4);
 	//cameraPortPrint("\x22\x22\x22\x22");
 	cameraPortPrint("\xFF");
 	cameraPortPrint("\x81\x01\x04\x73\x30\x1B");

@@ -424,7 +424,6 @@ void systemInit(void)
     initFirstOrderFilter();
     initMavlink();
     initCamera();
-    updateOSD();
     initMax7456();
     initPID();
 

@@ -225,10 +225,10 @@ void mavlinkSendESBData(void){
 								&msg,
 								mlxAmbTempC,
 								mlxObjTempC,
-								0,
-								0,
-								0,
-								0
+								gsbCatalytic1PPM,
+								gsbCatalytic2PPM,
+								gsbElectro1PPM,
+								gsbElectro2PPM
 								);
 
 	// Copy the message to the send buffer
