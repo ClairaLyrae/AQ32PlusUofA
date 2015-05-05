@@ -11,22 +11,25 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define gsbDefaultAddress	0x33
+#define gsbDefaultAddress	0x54
 
 #define gsbConvFactor 		0.02f
 #define gsbRefConvFactor 	0.02f
 #define gsbHtrConvFactor 	0.02f
 
 #define gsbCmdStatus 		0x5A
-#define gsbCmdCatalytic1 	0x5A
+#define gsbCmdCatalytic1 	0x0F
 #define gsbCmdCatalyticHtr1 0x5A
-#define gsbCmdCatalyticCon1 0x5A
-#define gsbCmdCatalytic2 	0x5A
-#define gsbCmdCatalyticHtr2 0x5A
+#define gsbCmdCatalyticCon1 0x00
+#define gsbCmdCatalytic2 	0x11
+#define gsbCmdCatalyticHtr2 0x13
 #define gsbCmdCatalyticCon2 0x5A
-#define gsbCmdElectro 		0xF0
-#define gsbCmdElectroRef 	0xF0
-#define gsbCmdElectroCon 	0xF0
+#define gsbCmdElectro1 		0x13
+#define gsbCmdElectro1Ref 	0x11
+#define gsbCmdElectro1Con 	0xF0
+#define gsbCmdElectro2 		0x15
+#define gsbCmdElectro2Ref 	0xF0
+#define gsbCmdElectro2Con 	0xF0
 #define gsbCmdCon		 	0xF0
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,17 +43,20 @@
 I2C_TypeDef *gsbI2C;
 uint8_t     gsbAddress;
 
-uint16_t gsbRawElectro;
+uint16_t gsbRawElectro1;
+uint16_t gsbRawElectro2;
 uint16_t gsbRawCatalytic1;
 uint16_t gsbRawCatalytic2;
 
-uint16_t gsbRawElectroRef;
+uint16_t gsbRawElectroRef1;
+uint16_t gsbRawElectroRef2;
 uint16_t gsbRawCatalyticHtr1;
 uint16_t gsbRawCatalyticHtr2;
 
-float gsbElectroPPM;
-float gsbCatalytic1PPM;
-float gsbCatalytic2PPM;
+uint16_t gsbElectro1PPM;
+uint16_t gsbElectro2PPM;
+uint16_t gsbCatalytic1PPM;
+uint16_t gsbCatalytic2PPM;
 
 uint8_t gsbSensorReady = false;
 
@@ -67,14 +73,30 @@ float calculatePPM(uint16_t rawVal)
 // Read Electrochemical Sensor Values
 ///////////////////////////////////////////////////////////////////////////////
 
-void readElectrochemicalSensor(void)
+void readElectrochemicalSensor1(void)
 {
     uint8_t data[2];
 
-    i2cRead(gsbI2C, gsbAddress, gsbCmdElectro, 2, data);    // Request pressure read
+    i2cRead(gsbI2C, gsbAddress, gsbCmdElectro1, 2, data);    // Request pressure read
+    gsbElectro1PPM = data[0];
 
-    gsbRawElectro = data[0] | (data[1] << 8);
-    gsbElectroPPM = calculatePPM(gsbRawElectro);
+    //gsbRawElectro1 = data[0] | (data[1] << 8);
+    //gsbElectro1PPM = calculatePPM(gsbRawElectro1);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Read Electrochemical Sensor Values
+///////////////////////////////////////////////////////////////////////////////
+
+void readElectrochemicalSensor2(void)
+{
+    uint8_t data[1];
+
+    i2cRead(gsbI2C, gsbAddress, gsbCmdElectro2, 1, data);    // Request pressure read
+    gsbElectro2PPM = data[0];
+
+    //gsbRawElectro2 = data[0] | (data[1] << 8);
+    //gsbElectro2PPM = calculatePPM(gsbRawElectro2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -83,12 +105,13 @@ void readElectrochemicalSensor(void)
 
 void readCatalyticSensor1(void)
 {
-    uint8_t data[2];
+    uint8_t data[1];
 
-    i2cRead(gsbI2C, gsbAddress, gsbCmdCatalytic1, 2, data);
+    i2cRead(gsbI2C, gsbAddress, gsbCmdCatalytic1, 1, data);
+    gsbCatalytic1PPM = data[0];
 
-    gsbRawCatalytic1 = data[0] | (data[1] << 8);
-    gsbCatalytic1PPM = calculatePPM(gsbRawCatalytic1);
+    //gsbRawCatalytic1 = data[0] | (data[1] << 8);
+    //gsbCatalytic1PPM = calculatePPM(gsbRawCatalytic1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -99,10 +122,11 @@ void readCatalyticSensor2(void)
 {
     uint8_t data[2];
 
-    i2cRead(gsbI2C, gsbAddress, gsbCmdCatalytic2, 2, data);
+    i2cRead(gsbI2C, gsbAddress, gsbCmdCatalytic2, 1, data);
+    gsbCatalytic2PPM = data[0];
 
-    gsbRawCatalytic2 = data[0] | (data[1] << 8);
-    gsbCatalytic2PPM = calculatePPM(gsbRawCatalytic2);
+    //gsbRawCatalytic2 = data[0] | (data[1] << 8);
+    //gsbCatalytic2PPM = calculatePPM(gsbRawCatalytic2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -132,11 +156,22 @@ void writeCatalyticHtr2(float voltage)
 // Set Electrochemical Sensor Reference Voltage
 ///////////////////////////////////////////////////////////////////////////////
 
-void writeElectroRef(float voltage)
+void writeElectroRef1(float voltage)
 {
     uint8_t data[1];
     data[0] = (unsigned)(voltage / gsbRefConvFactor);
-    i2cWriteBuffer(gsbI2C, gsbAddress, gsbCmdElectroRef, 1, data);
+    i2cWriteBuffer(gsbI2C, gsbAddress, gsbCmdElectro1Ref, 1, data);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Set Electrochemical Sensor Reference Voltage
+///////////////////////////////////////////////////////////////////////////////
+
+void writeElectroRef2(float voltage)
+{
+    uint8_t data[1];
+    data[0] = (unsigned)(voltage / gsbRefConvFactor);
+    i2cWriteBuffer(gsbI2C, gsbAddress, gsbCmdElectro2Ref, 1, data);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -158,7 +193,11 @@ uint8_t initGSB(void)
 ///////////////////////////////////////////////////////////////////////////////
 
 uint8_t updateGSB(void) {
-	readElectrochemicalSensor();
+    gsbI2C = I2C2;
+    gsbAddress = gsbDefaultAddress;
+
+	readElectrochemicalSensor1();
+	readElectrochemicalSensor2();
 	readCatalyticSensor1();
 	readCatalyticSensor2();
 	return true;

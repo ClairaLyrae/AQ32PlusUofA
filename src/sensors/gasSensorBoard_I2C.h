@@ -40,21 +40,24 @@
 
 // extern esbDevice_t esbDeviceGSB;
 
-extern float gsbElectroPPM;
-extern float gsbCatalytic1PPM;
-extern float gsbCatalytic2PPM;
+extern uint16_t gsbElectro1PPM;
+extern uint16_t gsbElectro2PPM;
+extern uint16_t gsbCatalytic1PPM;
+extern uint16_t gsbCatalytic2PPM;
 
 extern uint8_t gsbSensorReady;
 
 ///////////////////////////////////////////////////////////////////////////////
 
 float calculatePPM(uint16_t rawVal);
-void readElectrochemicalSensor(void);
+void readElectrochemicalSensor1(void);
+void readElectrochemicalSensor2(void);
 void readCatalyticSensor1(void);
 void readCatalyticSensor2(void);
 void writeCatalyticHtr1(float voltage);
 void writeCatalyticHtr2(float voltage);
-void writeElectroRef(float voltage);
+void writeElectroRef1(float voltage);
+void writeElectroRef2(float voltage);
 uint8_t initGSB(void);
 uint8_t updateGSB();
 

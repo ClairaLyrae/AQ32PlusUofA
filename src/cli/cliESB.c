@@ -37,9 +37,13 @@ void esbCLI()
 
 	    	// Show ESB data
             case 'a':// Print all ESB data
-				//updateMLX90614();
+				updateESB();
 				cliPortPrintF("MLX90614[AMB:%d,OBJ:%d]\n", mlxRawAmbTemp, mlxRawObjTemp);
 				cliPortPrintF("MLX90614[AMB:%f*C,OBJ:%f*C]\n", mlxAmbTempC, mlxObjTempC);
+				cliPortPrintF("GSC1[PPM:%d]\n", gsbElectro1PPM);
+				cliPortPrintF("GSC2[PPM:%d]\n", gsbElectro2PPM);
+				cliPortPrintF("GSE1[PPM:%d]\n", gsbCatalytic1PPM);
+				cliPortPrintF("GSE2[PPM:%d]\n", gsbCatalytic2PPM);
 				esbQuery = 'x';
                 validQuery = false;
                 break;
@@ -52,6 +56,7 @@ void esbCLI()
 				i2cTestAddress = readFloatCLI();
 				i2cTestRegister = readFloatCLI();
 				i2cTestDataLength = readFloatCLI();
+
 
 
 				cliPortPrintF("Reading I2C (add:%d, reg:%d, data:%d)\n", i2cTestAddress, i2cTestRegister, i2cTestDataLength);
@@ -91,7 +96,7 @@ void esbCLI()
 
             // Exit
             case 'x':
-			    cliPortPrint("\nExiting Camera CLI....\n\n");
+			    cliPortPrint("\nExiting ESB CLI....\n\n");
 			    cliBusy = false;
 			    return;
 			    break;

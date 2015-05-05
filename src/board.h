@@ -94,6 +94,7 @@
 #include "mpu6000.h"
 
 #include "mlx90614_I2C.h"
+#include "gasSensorBoard_I2C.h"
 #include "esb.h"
 
 #include "camera_VISCA.h"

@@ -12,13 +12,14 @@
 uint8_t esbDeviceIndex;
 
 void initESB(void) {
-	initMLX90614();
+	//initMLX90614();
 	//initGSB();
 	//initPDB();
 }
 
 void updateESB(void) {
 	updateMLX90614();
+	updateGSB();
 //	if(ESB_NUM_DEVICES == 0)
 //		return;
 //	esbDeviceIndex++;

@@ -54,6 +54,9 @@ void readObjectTemperature(void)
 {
     uint8_t data[2];
 
+    mlx90614I2C = I2C2;
+    mlx90614Address = 0x5A;
+
     i2cRead(mlx90614I2C, mlx90614Address, mlxCmdTempObj1, 2, data);    // Request pressure read
 
     mlxRawObjTemp = data[0];
