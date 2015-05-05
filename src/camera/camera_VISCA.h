@@ -79,7 +79,7 @@ enum {
 void cameraEnable(uint8_t state);
 void cameraEnablesOSD(uint8_t state);
 void updateOSD();
-void valueToVisca(float value);
+void valueToVisca(float value, int charAvailable);
 void cameraSetOrientation(uint8_t mode);
 
 void cameraSetZoom(uint8_t optical, uint8_t digital);
