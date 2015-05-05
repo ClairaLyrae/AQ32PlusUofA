@@ -224,7 +224,11 @@ void mavlinkSendESBData(void){
 								mavlink_system.compid,
 								&msg,
 								mlxAmbTempC,
-								mlxObjTempC
+								mlxObjTempC,
+								0,
+								0,
+								0,
+								0
 								);
 
 	// Copy the message to the send buffer
